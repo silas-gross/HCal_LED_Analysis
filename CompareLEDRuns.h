@@ -15,7 +15,7 @@ class CompareLEDRuns
         //struct
 
     public: 
-    //public variables, get and set methods etc.
+    //public variables, get and set methods etc..
 
 
 
