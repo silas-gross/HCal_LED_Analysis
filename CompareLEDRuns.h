@@ -1,3 +1,4 @@
+//written by Nikhil Kumar, inital commit 7/21/2023
 #ifndef __COMPARELEDRUNS_H__
 #define __COMPARELEDRUNS_H__
 
