@@ -7,6 +7,7 @@
 #include <vector>
 #include <map>
 #include <string>
+#include <TH1.h>
 
 class LEDRunData
 {
@@ -24,6 +25,8 @@ class LEDRunData
 			float phi;	//phi value
 			std::string label;	//label for tower to quick parse
 			};
+		int getPedestal(std::vector<int> chl_data); 
+		std::map<std::string, float> getPeak(std::vector<int> chl_data);
 	public:
 	//available global variable
 		
@@ -32,19 +35,26 @@ class LEDRunData
 		float date=19072023; 
 		std::vector<float> data_points;
 		std::map<std::string, std::map<std::string, float>> tower_datapts;  
-		std::vector<towerinfo> towermaps;
+		std::map<std::pair<int, int>, towerinfo> towermaps; //look up table for towers
+		std::vector<TH1F> datahists;
+		std::vector<int> packets (16); 
 	// methods to run
-		LEDRunData(std::string filename){ runfiles=filename;};
+		LEDRunData(std::string filename){ 
+			runfiles=filename;
+			for(int i=0; i<packets.size(); i++) packets[i]=i+7000+int(i/8)*1000;
+		};
 		LEDRunData(std::vector<towerinfo> towermap, std::string filename){
 			towermaps=towermap; 
 			runfiles=filename;
+			for(int i=0; i<packets.size(); i++) packets[i]=i+7000+int(i/8)*1000;
 		};
 		~LEDRunData();	
 		int process_event (Event *e); 
 		std::vector<float> CalculateChannelData(towerinfo tower);
 		std::vector<float> CalculateSectorData(std::vecto<towerinfo> sector);
 		std::vector<float> CalculateMPODData(int InnerOuter, int MPODBoard);
-		void fileoutput();
+		void FileOutput();
+		void ReadInput();
 	//get passed mapping such that the class 
 }
 #endif 
