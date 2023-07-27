@@ -26,32 +26,32 @@ class LEDRunData
 			std::string label;	//label for tower to quick parse
 			};
 		int getPedestal(std::vector<int> chl_data); 
-		std::map<std::string, float> getPeak(std::vector<int> chl_data);
+		std::map<std::string, float> getPeak(std::vector<int> chl_data, int pedestal);
 	public:
 	//available global variable
 		
 		int run_number=1; 
-		std::string runfiles="run_21951.txt"
-		float date=19072023; 
+		std::string runfiles="run_21951.txt";
+		int date=19072023; 
 		std::vector<float> data_points;
-		std::map<std::string, std::map<std::string, float>> tower_datapts;  
+		std::map<std::pair<int,int>, std::map<std::string, float>> tower_datapts;  
 		std::map<std::pair<int, int>, towerinfo> towermaps; //look up table for towers
-		std::vector<TH1F> datahists;
+		std::map<std::pair<int, int>, std::vector<TH1F>> datahists;
 		std::vector<int> packets (16); 
 	// methods to run
 		LEDRunData(std::string filename){ 
 			runfiles=filename;
-			for(int i=0; i<packets.size(); i++) packets[i]=i+7000+int(i/8)*1000;
+			for(int i=0; i<packets.size(); i++) packets[i]=i+7001+int(i/8)*1000;
 		};
 		LEDRunData(std::vector<towerinfo> towermap, std::string filename){
 			towermaps=towermap; 
 			runfiles=filename;
-			for(int i=0; i<packets.size(); i++) packets[i]=i+7000+int(i/8)*1000;
+			for(int i=0; i<packets.size(); i++) packets[i]=i+7001+int(i/8)*1000;
 		};
 		~LEDRunData();	
 		int process_event (Event *e); 
 		std::vector<float> CalculateChannelData(towerinfo tower);
-		std::vector<float> CalculateSectorData(std::vecto<towerinfo> sector);
+		std::vector<float> CalculateSectorData(std::vector<towerinfo> sector);
 		std::vector<float> CalculateMPODData(int InnerOuter, int MPODBoard);
 		void FileOutput();
 		void ReadInput();
