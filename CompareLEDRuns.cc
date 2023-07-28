@@ -47,7 +47,7 @@ std::vector<float> Peak_Hist_Fit(const char* filename){
     //float e1 = fit->GetParError(0);// error of the first parameter
 
     //delete un-needed things. I wonder if I actually need to do this explicity.
-    f->Close();
+    //f->Close();
     delete f;
     delete h_peak_ohcal;
     delete h_peak_ihcal;
