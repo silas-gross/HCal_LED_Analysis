@@ -5,6 +5,7 @@
 #include <pmonitor/pmonitor.h>
 #include <Event/Event.h>
 #include <Event/EventTypes.h>
+#include <GetLEDData.h>
 #include <vector>
 #include <map>
 #include <string>
