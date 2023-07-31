@@ -13,15 +13,26 @@
 #include <TF1.h>
 #include <TCanvas.h>
 
+//structures here for now. I can move it later.
+struct GaussFitResult {
+    //custom structure to hold fit parameter data. right now I have field for ihcal and ohcal. I could actually return a vector of my strutcure and only have fields for the parameters in general, but it may be better to keep it as is, since I expect to have ih and oh data for every set.
+    double mean_ih;
+    double sigma_ih;
+    double amplitude_ih;
+    double mean_oh;
+    double sigma_oh;
+    double amplitude_oh;
+};
 
-//written like this to start. To be moved later
+//written like this to start. Can be moved later
 //function declarations
-std::vector<float> Peak_Hist_Fit(const char* filename);//call function wih filename, and recieve fit parameters for ohcal and ihcal peak
-
+//std::vector<float> Peak_Hist_Fit(const char* filename);//call function wih filename, and recieve fit parameters for ohcal and ihcal peak
+GaussFitResult Peak_Hist_Fit(const char* filename);//new version of above using structure to store the fit parameters.
 
 
 //function definitions
-std::vector<float> Peak_Hist_Fit(const char* filename){
+//std::vector<float> Peak_Hist_Fit(const char* filename){
+GaussFitResult Peak_Hist_Fit(const char* filename){// use my custom structure, should I re do this to return the gauss fit paramaters for a specific histogram in a specific file?
     //open the root file called filename.root
     TFile *f=new TFile(Form("%s.root", filename));
     // pull up relevant histograms
@@ -33,29 +44,34 @@ std::vector<float> Peak_Hist_Fit(const char* filename){
     //create calls to the fits
     TF1 *fit_oh = h_peak_ohcal->GetFunction("gaus");
     TF1 *fit_ih = h_peak_ihcal->GetFunction("gaus");
+
+
+    /* redundant section. I made a structure to hold the information.
     //read out parameters
     //-----outer hcal
     float Mean_oh = fit_oh->GetParameter(0);
-    float Sigma_oh = fit_oh->GetParameter(0);
-    float Amplitude_oh = fit_oh->GetParameter(0);
+    float Sigma_oh = fit_oh->GetParameter(1);
+    float Amplitude_oh = fit_oh->GetParameter(2);
     //-----inner hcal
     float Mean_ih = fit_ih->GetParameter(0);
-    float Sigam_ih = fit_ih->GetParameter(0);
-    float Amplitude_ih = fit_ih->GetParameter(0);
-
+    float Sigam_ih = fit_ih->GetParameter(1);
+    float Amplitude_ih = fit_ih->GetParameter(2);
+    */
     // can do the same for fit errors
     //float e1 = fit->GetParError(0);// error of the first parameter
 
     //delete un-needed things. I wonder if I actually need to do this explicity.
+    // I guess I only need to delete the dynamically assigned (new) variables
     //f->Close();
-    delete f;
-    delete h_peak_ohcal;
-    delete h_peak_ihcal;
-    delete fit_oh;
-    delete fit_ih;
+    delete f;// f is dynamically assigned so I should manually delete it.
+    //delete h_peak_ohcal;
+    //delete h_peak_ihcal;
+    //delete fit_oh;
+    //delete fit_ih;
     //delete canvas;
 
     //fill and return vector of parameters
+    /*
     std::vector<float> vec_Param;
     vec_Param.push_back(Mean_oh);
     vec_Param.push_back(Sigma_oh);
@@ -65,6 +81,18 @@ std::vector<float> Peak_Hist_Fit(const char* filename){
     vec_Param.push_back(Sigma_ih);
     vec_Param.push_back(Amplitude_ih);
     return vec_Param;
+    */
+    GaussFitResult FitParam;
+
+    FitParam.mean_ih = fit_ih->GetParameter(1);
+    FitParam.sigma_ih = fit_ih->GetParameter(2);
+    FitParam.amplitude_ih = fit_ih->GetParameter(0);
+
+    FitParam.mean_oh = fit_oh->GetParameter(1);
+    FitParam.sigma_oh = fit_oh->GetParameter(2);
+    FitParam.amplitude_oh = fit_oh->GetParameter(0);
+
+    return FitParam;
 }
 
 
