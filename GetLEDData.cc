@@ -4,11 +4,19 @@
 
 LEDRunData::getPedestal(std::vector<int> chl_data) //just gets the pedestal value from first 3 samples
 {
-	a; 
+	int pv, d1=chl_data[0], d2=chl_data[1], d3=chl_data[2];
+	pv=(d1+d2+d3)/3;
+	return pv; 
+	//can break this out to do more clever in the future
 }
-LEDRunData::getPeak(std::vector<int> chl_data, int pedestal) //gets oeak value, peak position, peak width, pedestal rms
+LEDRunData::getPeak(std::vector<int> chl_data, int pedestal) //gets peak value, peak position, peak width, pedestal rms
 {
-	a;
+	std::vector<float> peak_data;
+	float full_val, pos, width, rms;
+	for(int sp:chl_data) full_val+=(sp-pedestal);
+	peak_data.push_back(full_val);
+	//now need to do waveform fitting, just going to do a very quick a* search
+	
 }
 LEDRunData::process_event(Event *e){
 	
@@ -23,9 +31,11 @@ LEDRunData::process_event(Event *e){
 			channel_data.push_back(p->iValue(s,c); 	
 		}
 		int pedestal=getPedestal(channel_data);
-		std::vector<float> getPeak(channel_data, pedestal);
+		std::vector<float>pk_data=getPeak(channel_data, pedestal);
 		std::pair<int, int> location {p,c};
-		datahists[location].
+		datahists[location][0]->Fill(evtval); 
+		datahists[location][1]->Fill(pedestal);
+		datahists[location][2]->Fill(
 	       }
 	}	       
 }
