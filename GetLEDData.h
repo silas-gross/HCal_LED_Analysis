@@ -8,6 +8,9 @@
 #include <map>
 #include <string>
 #include <TH1.h>
+#include <math.h>
+#include <algorithm>
+#include <utility>
 
 class LEDRunData
 {
@@ -27,6 +30,8 @@ class LEDRunData
 			};
 		int getPedestal(std::vector<int> chl_data); 
 		std::map<std::string, float> getPeak(std::vector<int> chl_data, int pedestal);
+		float FindWaveForm(std::vector*<int> chl_data, int pos); 
+		float Heuristic(std::vector<int> data, std::vector<int>wf, int ndf);
 	public:
 	//available global variable
 		

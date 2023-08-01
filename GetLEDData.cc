@@ -5,32 +5,124 @@ LEDRunDtaa::Heuristic(std::vector<int> data, std::vector<int> wf, int ndf)
 {
 	//use chi_squared/ndf as a fitting heuristic
 	float chi=0;
-	for(int i=0; i<data.size; i++) chi+=pow(data[i]-wf[i],2)/data[i];
+	for(int i=0; i<data.size(); i++) chi+=pow(data[i]-wf[i],2)/data[i];
 	chi=chi/ndf; 
 	return chi;
 }
 LEDRunData::FindWaveForm(std::vector*<int> chl_data, int pos)
 {
-	int n_params=1; 
-	std::vector<int> model (chl_data->size, chl_data->at(pos)), data=*chl_data; //model of just peak value
-	std::vector<float>param {data[pos]};
+	int n_params=1, width=1; 
+	std::vector<int> model (chl_data->size(), chl_data->at(pos)), data=*chl_data; //model of just peak value
+	std::vector<int>param {pos};
 	float heuristic=Heuristic(data, model, n_params);
-	std::map<float, std::pair<std::vector<float>, std::vector<int>>> child_models; //this will be used to generate the queue
-	for(int i=0; i<data.size; i++) //generate the first set of children, linear models
+	std::map<float, std::pair<std::vector<int>, std::vector<int>>> child_models; //this will be used to generate the queue
+	for(int i=0; i<data.size(); i++) //generate the first set of children, linear models
 	{
 		if(i==pos) continue;
-		std::vector<float> params {data[pos], data[i]};
+		std::vector<int> params {pos, i};
 		float slope=(data[pos]-data[i])/(pos-i);
 		float ints=data[pos]-slope*i;
 		std::vector<int>temp_model; 
-		for(int j=0; j<data.size; j++){
+		for(int j=0; j<data.size(); j++){
 		       float mp=slope*j+ints;
 		       temp_model.push_back((int)mp);
 		}
-		float temp_heur=Heutristic(data, temp_model, params.size);
+		float temp_heur=Heutristic(data, temp_model, params.size());
 		child_models[temp_heur]=std::make_pair(params, temp_model);
 	}	
-	//For the next set, use function pointer to generate the heuristic
+	while(child_models.size() > 0)
+	{
+		auto md=child_models.begin();
+		float parent_heur=md->first; 
+		auto vals=md->second;
+		child_models->erase(md);
+		std::sort(vals.first.begin(), vals.first.end());
+		for(int i=0; i<vals.first.size(); i++)
+		{
+			if(i==0 && vals.first.at(i) != 0)
+			{
+				for(int j=0; j<vals.first.at(i); j++)
+				{
+					float slope=(data[vals.first.at(i)]-data[j])/(vals.first.at(i)-j);
+					float ints=data[j]-slope*vals.first.at(i); 
+					std::vector<int>temp_model=vals.second; 
+					for(int k=0; k<vals.first.at(i); k++){
+					       	float mp=slope*k+ints;
+						temp_model.at(k)=(int)(mp);
+					}
+					std::vector<int> temp_params=vals.first;
+					temp_params.push_back(j);
+				       	float th=Heuristic(data, temp_model, temp_params.size()); 
+					if(th < parent_heur && th>1) child_models[th]=std::make_pair(temp_params, temp_model); 
+					else continue;	
+				}
+			}
+			else if(i==vals.first.size() && vals.first.at(i) != vals.second.size()-1)
+			{
+				for(int j=<vals.first.at(i)+1; j<vals.second.size(); j++)
+				{
+					float slope=(data[vals.first.at(i)]-data[j])/(vals.first.at(i)-j);
+					float ints=data[j]-slope*vals.first.at(i); 
+					std::vector<int>temp_model=vals.second; 
+					for(int k=vals.first.at(i); k<vals.second.size(); k++){
+					       	float mp=slope*k+ints;
+						temp_model.at(k)=(int)(mp);
+					}
+					std::vector<int> temp_params=vals.first;
+					temp_params.push_back(j);
+				       	float th=Heuristic(data, temp_model, temp_params.size()); 
+					if(th < parent_heur && th>1) child_models[th]=std::make_pair(temp_params, temp_model); 
+					else continue;	
+				}
+				
+			}
+			else if( vals.first.at(i) !=0 && vals.first.at(i) != vals.second.size()-1) 
+			{
+				for(int j=vals.first.at(i)+1; j<vals.first.at(i+1); j++)
+				{
+					float slope1=(data[vals.first.at(i)]-data[j])/(vals.first.at(i)-j);
+					float ints1=data[j]-slope*vals.first.at(i); 
+					float slope2=(data[vals.first.at(i+1)]-data[j])/(vals.first.at(i+1)-j);
+					float ints2=data[j]-slope*vals.first.at(i+1); 
+					std::vector<int>temp_model=vals.second; 
+					for(int k=vals.first.at(i); k<j; k++){
+					       	float mp=slope1*k+ints1;
+						temp_model.at(k)=(int)(mp);
+					}
+					for(int k=j; k<vals.first.at(i); k++){
+					       	float mp=slope2*k+ints2;
+						temp_model.at(k)=(int)(mp);
+					}
+					std::vector<int> temp_params=vals.first;
+					temp_params.push_back(j);
+				       	float th=Heuristic(data, temp_model, temp_params.size()); 
+					if(th < parent_heur && th>1) child_models[th]=std::make_pair(temp_params, temp_model); 
+					else continue;	
+				}
+				
+			}
+		
+			else continue;
+		}
+		if(child_models.size()==0)
+		{
+		       	model=vals.second;
+			param=vals.first;
+			heuristic=patent_heur;
+		}
+
+	}
+	int le=0, ge=0;
+	for(int sp=0; sp<chl_data->size(); sp++)
+	{
+	       	chl_data->at(sp)-=model.at(sp);
+		if(model.at(sp)>= data.at(pos)*0.475 && model.at(sp)<=data.at(pos)*0.515 && ge==0) le=sp; 
+	       	if(model.at(sp)>=data.at(pos)*0.6) ge=sp; 
+		if(model.at(sp)>= data.at(pos)*0.475 && model.at(sp)<=data.at(pos)*0.515 && ge!=0) ge=sp; 
+		
+	}
+	width=ge-le;
+	return width;
 	
 }
 LEDRunData::getPedestal(std::vector<int> chl_data) //just gets the pedestal value from first 3 samples
@@ -44,7 +136,7 @@ LEDRunData::getPeak(std::vector<int> chl_data, int pedestal) //gets peak value, 
 {
 	std::vector<float> peak_data;
 	float full_val=0, pos=0, width=0, rms=0, pk=0; 
-	for(int sp=0; sp<chl_data.size; sp++){
+	for(int sp=0; sp<chl_data.size(); sp++){
 		full_val+=(chl_data[sp]-pedestal);
 		if(chl_data[sp]>pk){
 			pk=chl_data[sp];
@@ -57,7 +149,7 @@ LEDRunData::getPeak(std::vector<int> chl_data, int pedestal) //gets peak value, 
 	width=FindWaveForm(&chl_data, (int)pos);
 	peak_data.push_back(width);
 	for(int sp:chl_data) rms+=pow(sp-pedestal, 2);
-	rms=sqrt(1/(chl_data.size)*rms);
+	rms=sqrt(1/(chl_data.size())*rms);
 	peak_data.push_back(rms);
 	return peak_data;
 }	
@@ -111,16 +203,23 @@ LEDRunData::ReadInput(){
 			datahists[id].push_back(hnew5);
 
 		}
+	for(auto e:filenames) process_event(&e); //not quite sure if I'm doing this right, should figure that out 
 }
 LEDRunData::FileOutput(){
-	a;
+	TFile* f=new TFile(Form("LED_run_data_%s.root", run_number).c_str(), "REMAKE");
+	for(auto a:datahists) for(auto h:a.second) h->Write();
+	f->Close();
 }
 LEDRunData::CalculateChannelData(towerinfo tower){
-	a;
+	int packet=tower.packet, channel=tower.channel;
+	auto d=datahists[std::makepair(packet, channel)];
+
 }
 LEDRunData::CalculateSectorData(std::vector<towerinfo> sector){
-	a;
+	int packet=tower.packet, channel=tower.channel;
+	
 }
 LEDRunData::CalculateMPODData(int InnerOuter, int MPODBoard){
+	int packet=tower.packet, channel=tower.channel;
 	a;
 }
