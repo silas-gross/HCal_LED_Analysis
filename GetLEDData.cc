@@ -1,10 +1,11 @@
 #include "GetLEDData.h"
 #include <TFile.h>
 #include <TString.h>
-LEDRunDtaa::Heuristic(std::vector<int> data, std::vector<int> wf, int ndf)
+LEDRunDtaa::Heuristic(std::vector<int> data, std::vector<int> wf, int npr)
 {
 	//use chi_squared/ndf as a fitting heuristic
 	float chi=0;
+	int ndf=data.size()-npr;
 	for(int i=0; i<data.size(); i++) chi+=pow(data[i]-wf[i],2)/data[i];
 	chi=chi/ndf; 
 	return chi;
