@@ -10,8 +10,10 @@
 #include <TFile.h>
 #include <TString.h>
 #include <TH1.h>
+//#include <TH1F.h>//maybe not needed.
 #include <TF1.h>
 #include <TCanvas.h>
+#include <TGraph.h>
 
 //structures here for now. I can move it later.
 struct GaussFitResult {
@@ -23,7 +25,6 @@ struct GaussFitResult {
     double sigma_oh;
     double amplitude_oh;
 };
-
 struct DateRunBeam {
     //custom structure to hold fit parameter data. right now I have field for ihcal and ohcal. I could actually return a vector of my strutcure and only have fields for the parameters in general, but it may be better to keep it as is, since I expect to have ih and oh data for every set.
     std::string date;
@@ -31,15 +32,13 @@ struct DateRunBeam {
     bool Beam; //No->0, Yes->1
 };
 
-//written like this to start. Can be moved later
-//function declarations
-//std::vector<float> Peak_Hist_Fit(const char* filename);//call function wih filename, and recieve fit parameters for ohcal and ihcal peak
-GaussFitResult Peak_Hist_Fit(const char* filename);//new version of above using structure to store the fit parameters.
-
-
+//function declarations//written like this to start. Can be moved later
+GaussFitResult Peak_Hist_Fit(const char* filename);
 //function definitions
 //std::vector<float> Peak_Hist_Fit(const char* filename){
-GaussFitResult Peak_Hist_Fit(const char* filename){// use my custom structure, should I re do this to return the gauss fit paramaters for a specific histogram in a specific file?
+GaussFitResult Peak_Hist_Fit(const char* filename){//call function wih filename, and recieve fit parameters for ohcal and ihcal peak
+    //new version of above using structure to store the fit parameters.
+    // use my custom structure, should I re do this to return the gauss fit paramaters for a specific histogram in a specific file?
     //open the root file called filename.root
     TFile *f=new TFile(Form("run_%s.root", filename));
     // pull up relevant histograms
@@ -163,19 +162,46 @@ int main{
     // maybe averages for each day since there are multiple runs per day? + general average for all before beam + avg for each month(added bonus of nicely seperating pre and post beam months)
     // std::cout << " Filler" << ;
 
+    // Extract data from the vectors and create arrays
+    int numRuns = run_info.size();
+    double* Run_Number = new double[numRuns];
+    double* Run_mean = new double[numRuns];
+    double* Run_sigma = new double[numRuns];
+    double* Run_amp = new double[numRuns];
     //-------------------------process run data
     vector<GaussFitResult> GaussFitParam;
-    for (int i=0; i<run+_info.size(); i++){
-        GaussFitParam.push_back(Peak_Hist_Fit(run_info[i,1].c_str()));
-        //hPeakInnerAmp.Fill();   
+    for (int i=0; i<numRuns; i++){//
+        GaussFitParam.push_back(Peak_Hist_Fit(run_info[i,1].c_str())); //execute peak fit for the specific run number and store results in vector
+        Run_Number[i]=run_info[i].run_number;
+        Run_mean[i]=run_info[i].mean_ih;
+        Run_sigma[i]=run_info[i].sigma_ih;
+        Run_amp[i]=run_info[i].amplitude_ih;
     }
     //I may need to convert the date to an int
+    // Create graphs to plot the fit parameters against the run numbers
+    TGraph* tgraph1 = new TGraph(numRuns, &Run_Number[0], &Run_mean[0]);
+    TGraph* tgraph2 = new TGraph(numRuns, &Run_Number[0], &Run_sigma[0]);
+    TGraph* tgraph3 = new TGraph(numRuns, &Run_Number[0], &Run_amp[0]);
+    // Create a canvas to display the graph
+    TCanvas* canvas1 = new TCanvas("canvas1", "Fit Parameters vs Run Number", 800, 600);
+    graph1->SetTitle("Mean Value vs Run Number");
+    graph1->GetXaxis()->SetTitle("Run Number");
+    graph1->GetYaxis()->SetTitle("Mean Value");
+    graph2->SetTitle("Sigma vs Run Number");
+    graph2->GetXaxis()->SetTitle("Run Number");
+    graph2->GetYaxis()->SetTitle("Sigma");
+    graph3->SetTitle("Amplitude vs Run Number");
+    graph3->GetXaxis()->SetTitle("Run Number");
+    graph3->GetYaxis()->SetTitle("Amplitude");
+    graph1->Draw("AP"); // Draw the graph as points 'P', Draw and scale axis 'A'
+    graph2->Draw("AP");  
+    graph3->Draw("AP");
 
-
-    //auto g1 = new TGraph(run_info[:,0],y);
-    //auto g2 = new TGraph(run_info[:,0],y);
-    //auto g3 = new TGraph(run_info[:,0],y);
-
+    // Keep the canvas open to display the graph
+    //canvas->Update();
+    //canvas->Modified();
+    //canvas->WaitPrimitive();
+    
 
     file.close();
     return 1;
