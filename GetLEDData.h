@@ -1,6 +1,9 @@
 #ifndef __GETLEDDATA_H__
 #define __GETLEDDATA_H__
 
+#include <fun4all/Fun4AllInputManager.h>
+#include <fun4allraw/Fun4AllPrdfInputManager.h>
+#include <fun4allraw/Fun4AllPrdfInputPoolManager.h>
 #include <pmonitor/pmonitor.h>
 #include <Event/Event.h>
 #include <Event/EventTypes.h>

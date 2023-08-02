@@ -179,7 +179,13 @@ LEDRunData::process_event(Event *e){
 	}	       
 }
 LEDRunData::ReadInput(){
-	pListopen(filename);
+	Fun4AllServer *se =Fun4AllServer::instance();
+	se->Verbosity(0);
+	Fun4AllPrdfInputPoolManager* in= new Fun4AllPrdfInputPoolManager("in");
+	in->fileopen(filename);
+	se->registerInputManager(in);
+	in->run();
+
 	for(auto pid:packets)
 		for(int c=0; c<192; c++){
 			std::pair<int, int> id {p,c};
