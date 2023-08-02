@@ -214,13 +214,36 @@ LEDRunData::FileOutput(){
 LEDRunData::CalculateChannelData(towerinfo tower){
 	int packet=tower.packet, channel=tower.channel;
 	auto d=datahists[std::makepair(packet, channel)];
-
+	std::map<std::string, float> twr_mean;
+	twr_mean["Value"]=d[0]->GetMean();
+	twr_mean["Peak"]=d[1]->GetMean();
+	twr_mean["Pedestal"]=d[2]->GetMean();
+	twr_mean["Pedestal RMS"]=d[3]->GetMean();
+	twr_mean["Peak Location"]=d[4]->GetMean();
+	twr_mean["Peak Width"]=d[5]->GetMean();
+	tower_datapts[std::makepair(packet, channel)]=twr_mean;
+		
 }
 LEDRunData::CalculateSectorData(std::vector<towerinfo> sector){
-	int packet=tower.packet, channel=tower.channel;
-	
+	std::vector<float> sector_vals (5,0); 
+	int sector_numb=0;
+	bool sector_io=false;
+	for(auto tower:sector) 
+	{
+		sector_numb=tower.sector;
+		sector_io=tower.inner_outer;
+		int packet=tower.packet, channel=tower.channel;
+		auto d=datahists[std::makepair(packet, channel)];
+		sector_vals.at(0)+=d[0]->GetMean();
+		sector_vals.at(1)+=d[1]->GetMean();
+		sector_vals.at(2)+=d[2]->GetMean();
+		sector_vals.at(3)+=d[3]->GetMean();
+		sector_vals.at(4)+=d[4]->GetMean();
+	}
+	for(int i=0; i<sector_vals.size(); i++) sector_vals.at(i)=sector_vals.at(i)/sector.size();
+	sector_datapts[std::makepair(sector_io, sector_numb)]=sector_vals;
 }
 LEDRunData::CalculateMPODData(int InnerOuter, int MPODBoard){
 	int packet=tower.packet, channel=tower.channel;
 	a;
-}
+} //Not yet on this, will work on after first data

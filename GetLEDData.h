@@ -40,6 +40,7 @@ class LEDRunData
 		int date=19072023; 
 		std::vector<float> data_points;
 		std::map<std::pair<int,int>, std::map<std::string, float>> tower_datapts;  
+		std::map<std::pair<bool, int>, std::vector<float>> sector_datapts;
 		std::map<std::pair<int, int>, towerinfo> towermaps; //look up table for towers
 		std::map<std::pair<int, int>, std::vector<TH1F>> datahists;
 		std::vector<int> packets (16); 
