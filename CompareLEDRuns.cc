@@ -10,21 +10,21 @@
 #include <TFile.h>
 #include <TString.h>
 #include <TH1.h>
-//#include <TH1F.h>//maybe not needed.
+#include <TH1F.h>//maybe not needed.
+#include <TH2F.h>
 #include <TF1.h>
+#include <TF2.h>
 #include <TCanvas.h>
 #include <TGraph.h>
-
+// I need to characterize: Ped, peak, ped_rms, peak location, peak width
 //structures here for now. I can move it later.
 struct GaussFitResult {
-    //custom structure to hold fit parameter data. right now I have field for ihcal and ohcal. I could actually return a vector of my strutcure and only have fields for the parameters in general, but it may be better to keep it as is, since I expect to have ih and oh data for every set.
-    double mean_ih;
-    double sigma_ih;
-    double amplitude_ih;
-    double mean_oh;
-    double sigma_oh;
-    double amplitude_oh;
+    //custom structure to hold fit parameter data.
+    double mean;
+    double sigma;
+    double amplitude;
 };
+
 struct DateRunBeam {
     //custom structure to hold fit parameter data. right now I have field for ihcal and ohcal. I could actually return a vector of my strutcure and only have fields for the parameters in general, but it may be better to keep it as is, since I expect to have ih and oh data for every set.
     std::string date;
@@ -33,88 +33,53 @@ struct DateRunBeam {
 };
 
 //function declarations//written like this to start. Can be moved later
-GaussFitResult Peak_Hist_Fit(const char* filename);
+GaussFitResult Hist_Fit_1D(const char* filename, TH1F* histogram);
+float Tower_Slope_Fit(vector<float> TowerPeaks);
+
 //function definitions
-//std::vector<float> Peak_Hist_Fit(const char* filename){
-GaussFitResult Peak_Hist_Fit(const char* filename){//call function wih filename, and recieve fit parameters for ohcal and ihcal peak
-    //new version of above using structure to store the fit parameters.
-    // use my custom structure, should I re do this to return the gauss fit paramaters for a specific histogram in a specific file?
+GaussFitResult Hist_Fit_1D(const char* filename, TH1F* histogram){
     //open the root file called filename.root
-    TFile *f=new TFile(Form("run_%s.root", filename));
+    TFile *f = new TFile(Form("run_%s.root", filename));
     // pull up relevant histograms
-    TH1F *h_peak_ohcal=(TH1F*)f->Get("h_peak_ohcal");
-    TH1F *h_peak_ihcal=(TH1F*)f->Get("h_peak_ihcal");
+    //TH1F *htemp=(TH1F*)f->Get(Form("%s", histogram));// c style cast, should work but I will try something else
+     TH1F* htemp = static_cast<TH1F*>(f->Get(histogram->GetName()));//c++ style cast
     //Fit the two histograms
-    h_peak_ohcal->Fit("gaus");
-    h_peak_ihcal->Fit("gaus");
+    htemp->Fit("gaus");
     //create calls to the fits
-    TF1 *fit_oh = h_peak_ohcal->GetFunction("gaus");
-    TF1 *fit_ih = h_peak_ihcal->GetFunction("gaus");
-
-
-    /* redundant section. I made a structure to hold the information.
-    //read out parameters
-    //-----outer hcal
-    float Mean_oh = fit_oh->GetParameter(0);
-    float Sigma_oh = fit_oh->GetParameter(1);
-    float Amplitude_oh = fit_oh->GetParameter(2);
-    //-----inner hcal
-    float Mean_ih = fit_ih->GetParameter(0);
-    float Sigam_ih = fit_ih->GetParameter(1);
-    float Amplitude_ih = fit_ih->GetParameter(2);
-    */
-    // can do the same for fit errors
-    //float e1 = fit->GetParError(0);// error of the first parameter
-
-    //delete un-needed things. I wonder if I actually need to do this explicity.
-    // I guess I only need to delete the dynamically assigned (new) variables
-    //f->Close();
-    delete f;// f is dynamically assigned so I should manually delete it.
-    //delete h_peak_ohcal;
-    //delete h_peak_ihcal;
-    //delete fit_oh;
-    //delete fit_ih;
-    //delete canvas;
-
-    //fill and return vector of parameters
-    /*
-    std::vector<float> vec_Param;
-    vec_Param.push_back(Mean_oh);
-    vec_Param.push_back(Sigma_oh);
-    vec_Param.push_back(Amplitude_oh);
-
-    vec_Param.push_back(Mean_ih);
-    vec_Param.push_back(Sigma_ih);
-    vec_Param.push_back(Amplitude_ih);
-    return vec_Param;
-    */
+    TF1 *fit = htemp->GetFunction("gaus");
+    //delete dynamically cast variables
+    delete f;
+    //store and return parameters of fit. hardcoded to assume gaussian
     GaussFitResult FitParam;
-
-    FitParam.mean_ih = fit_ih->GetParameter(1);
-    FitParam.sigma_ih = fit_ih->GetParameter(2);
-    FitParam.amplitude_ih = fit_ih->GetParameter(0);
-
-    FitParam.mean_oh = fit_oh->GetParameter(1);
-    FitParam.sigma_oh = fit_oh->GetParameter(2);
-    FitParam.amplitude_oh = fit_oh->GetParameter(0);
-
+    FitParam.amplitude = fit->GetParameter(0);
+    FitParam.mean = fit->GetParameter(1);
+    FitParam.sigma = fit->GetParameter(2);
     return FitParam;
 }
 
+float Tower_Slope_Fit(vector<float> TowerPeaks);{
+    // create slope variable and number of runs to look at
+    float slope;
+    const int Number_runs = TowerPeaks.size();
+    // make graph with siza=number of runs
+    TGraph graph(Number_runs);
+
+    // Fill the Graph with the value for each run number// note this function will be called tower by tower
+    for (int j = 0; j < Number_runs; ++j) {
+        graph.SetPoint(j, j + 1, TowerPeaks[j]); // 
+    }
+    //Fit graph with a linear function
+    TF1 fit("fit", "pol1", 1, Number_runs); // Linear function: pol1. 1 stands for xmin=1 so we start with the first run.
+    graph.Fit(&fit, "Q");
+
+    // Get the slope of the fit (parameter 1 corresponds to the slope)
+    slope = fit.GetParameter(1);
+    return slope;
+}
 
 int main{
     //--------------------------histograms
-    // I should really define these in the header if possible.
 
-    //these would make more sense as Tgraphs...
-    /*
-    TH1F* hPeakInnerAmp=new TH1F("hPeakInnerAmp","Inner HCal: Peak Amplitude", 100,0,100); 
-    TH1F* hPeakInnerSigma=new TH1F("hPeakInnerSigma","Inner HCal: Peak Sigma", 100,0,100);
-    TH1F* hPeakInnerMean=new TH1F("hPeakInnerMean","Inner HCal: Peak Mean", 100,0,100);
-    TH1F* hPeakOuterAmp=new TH1F("hPeakOnnerAmp","Outer HCal: Peak Amplitude", 100,0,100); 
-    TH1F* hPeakOuterSigma=new TH1F("hPeakOnnerSigma","Outer HCal: Peak Sigma", 100,0,100);
-    TH1F* hPeakOuterMean=new TH1F("hPeakOnnerMean","Outer HCal: Peak Mean", 100,0,100);
-    *///
     //-----------------parse csv
     std::ifstream file("runs_and_time.csv");//specify csv file with format (expected):Date, Run Number, Post-Beam (Y/N) 
     std::string line;
@@ -157,9 +122,6 @@ int main{
         run_info.push_back({row[0],row[1],Beam_on});
         //move on to next row/line (each specific led run)
     }
-    // simple way to compare is make averages & devaition from that avg
-    // also trendline of avg and relative error over time
-    // maybe averages for each day since there are multiple runs per day? + general average for all before beam + avg for each month(added bonus of nicely seperating pre and post beam months)
     // std::cout << " Filler" << ;
 
     // Extract data from the vectors and create arrays
@@ -171,13 +133,12 @@ int main{
     //-------------------------process run data
     vector<GaussFitResult> GaussFitParam;
     for (int i=0; i<numRuns; i++){//
-        GaussFitParam.push_back(Peak_Hist_Fit(run_info[i,1].c_str())); //execute peak fit for the specific run number and store results in vector
-        Run_Number[i]=run_info[i].run_number;
+        GaussFitParam.push_back(Hist_Fit_1D(run_info[i,1].c_str())); //execute peak fit for the specific run number and store results in vector
+        Run_Number[i]=std::stoi(run_info[i].run_number);
         Run_mean[i]=run_info[i].mean_ih;
         Run_sigma[i]=run_info[i].sigma_ih;
         Run_amp[i]=run_info[i].amplitude_ih;
     }
-    //I may need to convert the date to an int
     // Create graphs to plot the fit parameters against the run numbers
     TGraph* tgraph1 = new TGraph(numRuns, &Run_Number[0], &Run_mean[0]);
     TGraph* tgraph2 = new TGraph(numRuns, &Run_Number[0], &Run_sigma[0]);
