@@ -1,7 +1,10 @@
 #include "GetLEDData.h"
 #include <TFile.h>
 #include <TString.h>
-LEDRunDtaa::Heuristic(std::vector<int> data, std::vector<int> wf, int npr)
+R__LOAD_LIBRARY(libfun4all.so);
+R__LOAD_LIBRARY(libfun4allraw.so);
+
+LEDRunData::Heuristic(std::vector<int> data, std::vector<int> wf, int npr)
 {
 	//use chi_squared/ndf as a fitting heuristic
 	float chi=0;
@@ -141,10 +144,10 @@ LEDRunData::getPeak(std::vector<int> chl_data, int pedestal) //gets peak value, 
 		full_val+=(chl_data[sp]-pedestal);
 		if(chl_data[sp]>pk){
 			pk=chl_data[sp];
-			pos=sp+1;
+			pos=sp;
 		}
 	}
-	peak_data.push_back(full_val);
+	peak_data.push_back(pk);
 	peak_data.push_back(pos);
 	//now need to do waveform fitting, just going to do a very quick a* search
 	width=FindWaveForm(&chl_data, (int)pos);
@@ -182,10 +185,9 @@ LEDRunData::ReadInput(){
 	Fun4AllServer *se =Fun4AllServer::instance();
 	se->Verbosity(0);
 	Fun4AllPrdfInputPoolManager* in= new Fun4AllPrdfInputPoolManager("in");
-	in->fileopen(filename);
+	in->AddPrdfInputList(filename);
 	se->registerInputManager(in);
-	in->run();
-
+	
 	for(auto pid:packets)
 		for(int c=0; c<192; c++){
 			std::pair<int, int> id {p,c};
@@ -210,7 +212,7 @@ LEDRunData::ReadInput(){
 			datahists[id].push_back(hnew5);
 
 		}
-	for(auto e:filenames) process_event(&e); //not quite sure if I'm doing this right, should figure that out 
+	for(auto e:se->run()) process_event(&e); //not quite sure if I'm doing this right, should figure that out 
 }
 LEDRunData::FileOutput(){
 	TFile* f=new TFile(Form("LED_run_data_%s.root", run_number).c_str(), "REMAKE");
