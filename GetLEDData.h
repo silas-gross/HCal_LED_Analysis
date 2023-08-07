@@ -43,26 +43,26 @@ class LEDRunData: public SubsysReco
 		std::string runfiles="run_21951.txt";
 		int date=19072023; 
 		std::vector<float> data_points;
-		std::map<std::pair<int,int>, std::map<std::string, float>> tower_datapts;  
-		std::map<std::pair<bool, int>, std::vector<float>> sector_datapts;
-		std::map<std::pair<int, int>, towerinfo> towermaps; //look up table for towers
-		std::map<std::pair<int, int>, std::vector<TH1F>> datahists;
-		std::vector<int> packets (16); 
+		std::map < std::pair< int, int > , std::map<std::string, float> > tower_datapts;  
+		std::map < std::pair< bool, int> , std::vector<float> > sector_datapts;
+		std::map < std::pair< int, int > , towerinfo > towermaps; //look up table for towers
+		std::map < std::pair< int, int > , std::vector< TH1F > > datahists;
+		std::vector < int > packets (16) ; 
 	// methods to run
 		LEDRunData(std::string filename){ 
 			runfiles=filename;
 			for(int i=0; i<packets.size(); i++) packets[i]=i+7001+int(i/8)*1000;
 		};
-		LEDRunData(std::vector<towerinfo> towermap, std::string filename){
+		LEDRunData(std::map<std::pair<int, int> std::vector<towerinfo>> towermap, std::string filename){
 			towermaps=towermap; 
 			runfiles=filename;
 			for(int i=0; i<packets.size(); i++) packets[i]=i+7001+int(i/8)*1000;
 		};
 		~LEDRunData();	
 		int process_event (Event *e) overload; 
-		std::vector<float> CalculateChannelData(towerinfo tower);
-		std::vector<float> CalculateSectorData(std::vector<towerinfo> sector);
-		std::vector<float> CalculateMPODData(int InnerOuter, int MPODBoard);
+	        void CalculateChannelData(towerinfo tower);
+		void CalculateSectorData(std::vector<towerinfo> sector);
+		void CalculateMPODData(int InnerOuter, int MPODBoard);
 		void FileOutput();
 		void ReadInput();
 	//get passed mapping such that the class 

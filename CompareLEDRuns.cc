@@ -284,4 +284,39 @@ void RunForEach(std::string fname)
 	for( auto s:sector_towers) data->CalculateSectorData(s);
 	auto sectordata=data->sector_datapts;
 
+}
+void BuildTowerMap()
+{
+	for(int i=0; i<32; i++)
+	{
+		int packet=i/4+1;
+		for(int j=0; j<48; j++)
+		{
+			int chn=(i%4)*48+j; 
+			bool inout, ns;
+			if(j<24) ns=true;
+		        else ns=false;
+			int etabin, phibin;
+			etabin=j/2+1;
+			phibin=j%2+i+1;
+		        float eta=(etabin-12)/12; 
+			float phi=(phibin-1)/(2*3.1415);
+			for(int k=0; k<1; k++){
+				std::string label;
+				if(k==0){
+					label="Inner HCal sector %i, Channel %i"
+				       	inout=true;
+					packet=7000+packet;
+				}
+				else{
+					label="outer HCal sector %i, Channel %i"
+				       	inout=false;
+				       	packet=8000+packet;	
+				}
+				towerinfo tower { inout, ns, i, j/2, packet, etabin, phibin, eta, phi, label }; 
+				towermaps[std::makepair<packet, chn>]=tower; 
+			}	
+		}
+	}
 }	
+
