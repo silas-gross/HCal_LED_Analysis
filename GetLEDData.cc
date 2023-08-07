@@ -182,11 +182,6 @@ LEDRunData::process_event(Event *e){
 	}	       
 }
 LEDRunData::ReadInput(){
-	Fun4AllServer *se =Fun4AllServer::instance();
-	se->Verbosity(0);
-	Fun4AllPrdfInputPoolManager* in= new Fun4AllPrdfInputPoolManager("in");
-	in->AddPrdfInputList(filename);
-	se->registerInputManager(in);
 	
 	for(auto pid:packets)
 		for(int c=0; c<192; c++){
@@ -212,13 +207,14 @@ LEDRunData::ReadInput(){
 			datahists[id].push_back(hnew5);
 
 		}
-	for(auto e:se->run()) process_event(&e); //not quite sure if I'm doing this right, should figure that out 
 }
+
 LEDRunData::FileOutput(){
 	TFile* f=new TFile(Form("LED_run_data_%s.root", run_number).c_str(), "REMAKE");
 	for(auto a:datahists) for(auto h:a.second) h->Write();
 	f->Close();
 }
+
 LEDRunData::CalculateChannelData(towerinfo tower){
 	int packet=tower.packet, channel=tower.channel;
 	auto d=datahists[std::makepair(packet, channel)];

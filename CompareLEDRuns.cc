@@ -264,3 +264,24 @@ int main{
     file.close();
     return 1;
 }
+void RunForEach(std::string fname)
+{
+	GetLedData* data=new GetLedData(towermap, fname);
+	data->ReadInput();
+	Fun4AllServer *se =Fun4AllServer::instance();
+	se->Verbosity(0);
+	Fun4AllPrdfInputPoolManager* in= new Fun4AllPrdfInputPoolManager("in");
+	in->AddPrdfInputList(filename);
+	se->registerInputManager(in);
+	se->registerSubsystem(data);
+	se->run();
+	data->FileOutput();
+       	std::map<int, std::vector<towerinfo>> sector_towers;
+	for(auto t:data->towermaps){
+	       	data->CalculateChannelData(t); 
+		sector_towers[t.sector].push_back(t); 
+	}
+	for( auto s:sector_towers) data->CalculateSectorData(s);
+	auto sectordata=data->sector_datapts;
+
+}	

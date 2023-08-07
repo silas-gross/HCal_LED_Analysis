@@ -4,6 +4,7 @@
 #include <fun4all/Fun4AllInputManager.h>
 #include <fun4allraw/Fun4AllPrdfInputManager.h>
 #include <fun4allraw/Fun4AllPrdfInputPoolManager.h>
+#include <fun4all/SubsysReco.h>
 #include <pmonitor/pmonitor.h>
 #include <Event/Event.h>
 #include <Event/EventTypes.h>
@@ -15,7 +16,7 @@
 #include <algorithm>
 #include <utility>
 
-class LEDRunData
+class LEDRunData: public SubsysReco
 {
 	private:
 	//tower data struture with definition of tower, taken from the HCal base class
@@ -58,7 +59,7 @@ class LEDRunData
 			for(int i=0; i<packets.size(); i++) packets[i]=i+7001+int(i/8)*1000;
 		};
 		~LEDRunData();	
-		int process_event (Event *e); 
+		int process_event (Event *e) overload; 
 		std::vector<float> CalculateChannelData(towerinfo tower);
 		std::vector<float> CalculateSectorData(std::vector<towerinfo> sector);
 		std::vector<float> CalculateMPODData(int InnerOuter, int MPODBoard);
