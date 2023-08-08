@@ -42,8 +42,143 @@ struct DateRunBeam {
 
 //function declarations
 GaussFitResult Hist_Fit_1D(const char* filename, const char* histogramName);// pass a filename and a TH1F histname and recive gaussian fit parameters
-float Tower_Slope_Fit(vector<float> TowerPeaks);// pass a vector of peak values for a single tower over many runs and recieve the  value vs time slope
+float Tower_Slope_Fit(vector<float> TowerPeaks);// pass a vector of peak values for a single tower over many runs and recieve the value vs time slope. this will be useful for 2d histograms.
 std::vector<TGraph*> CreateTGraphVector(const std::vector<DateRunBeam>& run_info, const char* histogramName); // pass a vector of all run_info (defined in the csv) and make tgraphs of gaussian sigma, mean, amp using Hist_Fit_1D
+float Channel_Value_Slope(const std::vector<DateRunBeam>& run_info, const char* filename, const char* histogramName);// pass a  TH2F histogram name, and list of runs to look at and find the slope value for all eta phi bins
+
+//main program
+int main{
+    //--------------------------histograms
+    //-----------------parse csv
+    std::ifstream file("runs_and_time.csv");//specify csv file with format (expected):Date, Run Number, Post-Beam (Y/N) 
+    std::string line;
+    std::istringstream iss(line); // Use a stringstream to split the lines into inputs
+    std::string cell;
+    std::vector<std::string> row; // make a vector of strings called "row"
+
+    std::vector<DateRunBeam> Run_info;// remember vector.push_back({el1,el2,el3});
+    //this struct is {string, int, bool}
+    //-------------------------open file
+    if (!file.is_open()){
+        std::cout << "Error opening the file." << std::endl;
+        return 1;
+    }
+    //-------------------------loop over rows in file
+    //-------------------------read run info csv in to memory
+    while (std::getline(file, line)){ //look at each line in the csv and store it in a string
+        while (std::getline(iss, cell, ',')){ //read "iss" stringstream using comma as the delimiter and store the value in the string "cell"
+            row.push_back(cell); //store each "cell" in the vector "row" 
+        }
+        // Process the row data as needed
+        // Print the elements of each row:      
+        // Date, Run Number, Post-Beam (Y/N) 
+        for (const auto &element : row){
+            std::cout << element << " ";
+        }
+        std::cout << std::endl;
+        bool Beam_On;// this is a big distraction. 
+        // maybe it is better to just write beeam status in the csv as 0 and 1. easier to convert that to bool
+        if (strcmp(row[2],"N")){
+            Beam_On=0;
+        }
+        else if(strcmp(row[2],"Y")){
+            Beam_on=1;
+        } 
+        else {
+            std::cout << "Error: Unexpected Beam Status" << std::endl;
+        return 1;
+        }
+        run_info.push_back({row[0], row[1], Beam_on});
+        //move on to next row/line (each specific led run)
+    }
+
+    //create graphs to characterize data
+    const char* ohcalhistname="h_peak_ohcal";
+    const char* ihcalhistname="h_peak_ihcal";
+    std::vector<TGraph*> gauss_Peak_graphs_ohcal = CreateTGraphVector(run_info, ohcalhistname);//create a vector of tgraphs for sigma, mean, amp
+    std::vector<TGraph*> gauss_Peak_graphs_ihcal = CreateTGraphVector(run_info, ihcalhistname);
+
+    // Create a TCanvas to draw the TGraphs
+    TCanvas* c1 = new TCanvas("canvas1", "Peak Parameter graphs", 1800, 1500);
+    c1->Divide(1,2);//divide in to two pads. one for ohcal. one for ihcal
+    // columns, rows// need 3 columns each for ohcal and ihcal
+    
+    
+    /* // maybe I can clean this up and do it in a loop later
+    for (size_t i = 0; i < myGraphs.size(); ++i) {
+        canvas->cd(i+1); // Activate the canvas
+        CreateTGraphVector[i]->Draw((i == 0) ? "APL" : "PL"); // Use "APL" for the first graph, "PL" for the rest
+    }*/
+
+
+    //-------------------------------------------
+    //top pad will be ihcal
+    TPad* TopPad = (TPad*)c1->cd(1);
+    //divide in to 3 columns for peak, sigma, amp
+    TopPad->Divide(3,1);
+    //ihcal peak mean
+    TopPad->cd(1);
+    gPad->SetTopMargin(0.12);
+    gPad->SetFillColor(33);
+    gauss_Peak_graphs_ihcal[1]->Draw("A");
+    //ihcal peak sigma
+    TopPad->cd(2);
+    gPad->SetTopMargin(0.12);
+    gPad->SetLeftMargin(0.15);
+    gPad->SetFillColor(33);
+    gauss_Peak_graphs_ihcal[2]->Draw("A");
+    //ihcal peak amplitude
+    TopPad->cd(3);
+    gPad->SetTopMargin(0.12);
+    gPad->SetLeftMargin(0.15);
+    gPad->SetFillColor(33);
+    gauss_Peak_graphs_ihcal[3]->Draw("A");
+    
+    //-----------------------------------------
+    //bottom pad is ohcal
+    TPad* BotPad = (TPad*)c1->cd(2);
+    //divide in to 3 columns for peak, sigma, amp
+    BotPad->Divide(3,1);
+    //ihcal peak mean
+    BotPad->cd(1);
+    gPad->SetTopMargin(0.12);
+    gPad->SetFillColor(33);
+    gauss_Peak_graphs_ihcal[1]->Draw("A");
+    //ihcal peak sigma
+    BotPad->cd(2);
+    gPad->SetTopMargin(0.12);
+    gPad->SetLeftMargin(0.15);
+    gPad->SetFillColor(33);
+    gauss_Peak_graphs_ihcal[2]->Draw("A");
+    //ihcal peak amplitude
+    BotPad->cd(3);
+    gPad->SetTopMargin(0.12);
+    gPad->SetLeftMargin(0.15);
+    gPad->SetFillColor(33);
+    gauss_Peak_graphs_ihcal[3]->Draw("A");
+
+    //-------------------------------------------
+    // Keep the canvas open to display the graph
+    c1->Update();
+    //canvas->Modified();
+    c1->WaitPrimitive();//wait for the user to close the program
+    //*
+    c1->print("hcal_peak_parameters.pdf");
+
+    //clean up dynamically allocated memory
+    for (const auto& graph : gauss_Peak_graph_ohcal) {
+        delete graph;
+    }
+    for (const auto& graph : gauss_Peak_graph_ihcal) {
+        delete graph;
+    }
+    delete c1;
+    delete ohcalhistname;
+    delete ihcalhistname;
+    //*/
+    file.close();
+    return 1;
+}
 
 //function definitions
 GaussFitResult Hist_Fit_1D(const char* filename, const char* histogramName){
@@ -51,7 +186,7 @@ GaussFitResult Hist_Fit_1D(const char* filename, const char* histogramName){
     TFile *f = new TFile(Form("run_%s.root", filename));
     // pull up relevant histograms
     //TH1F *htemp=(TH1F*)f->Get(Form("%s", histogram));// c style cast, should work but I will try something else
-     TH1F* htemp = static_cast<TH1F*>(f->Get(histogramName));//c++ style cast
+    TH1F* htemp = static_cast<TH1F*>(f->Get(histogramName));//c++ style cast
     //Fit the two histograms
     htemp->Fit("gaus");
     //create calls to the fits
@@ -66,7 +201,7 @@ GaussFitResult Hist_Fit_1D(const char* filename, const char* histogramName){
     return FitParam;
 }
 
-float Tower_Slope_Fit(vector<float> TowerPeaks);{
+float Tower_Slope_Fit(vector<float> TowerPeaks, int numRuns);{
     // create slope variable and number of runs to look at
     float slope;
     const int Number_runs = TowerPeaks.size();
@@ -134,133 +269,112 @@ std::vector<TGraph*> CreateTGraphVector(const std::vector<DateRunBeam>& run_info
     return graphVector;
 } 
 
-//main program
-int main{
-    //--------------------------histograms
+std::vector<std::vector<float>> Channel_Value_Slope(const std::vector<DateRunBeam>& run_info, const char* histogramName){
 
-    //-----------------parse csv
-    std::ifstream file("runs_and_time.csv");//specify csv file with format (expected):Date, Run Number, Post-Beam (Y/N) 
-    std::string line;
-    std::istringstream iss(line); // Use a stringstream to split the lines into inputs
-    std::string cell;
-    std::vector<std::string> row; // make a vector of strings called "row"
-
-    std::vector<DateRunBeam> Run_info;// remember vector.push_back({el1,el2,el3});
-    //this struct is {string, int, bool}
-    //-------------------------open file
-    if (!file.is_open()){
-        std::cout << "Error opening the file." << std::endl;
-        return 1;
-    }
-    //-------------------------loop over rows in file
-    //-------------------------read run info csv in to memory
-    while (std::getline(file, line)){ //look at each line in the csv and store it in a string
-        while (std::getline(iss, cell, ',')){ //read "iss" stringstream using comma as the delimiter and store the value in the string "cell"
-            row.push_back(cell); //store each "cell" in the vector "row" 
-        }
-        // Process the row data as needed
-        // Print the elements of each row:      
-        // Date, Run Number, Post-Beam (Y/N) 
-        for (const auto &element : row){
-            std::cout << element << " ";
-        }
-        std::cout << std::endl;
-        bool Beam_On;// this is a big distraction. 
-        // maybe it is better to just write beeam status in the csv as 0 and 1. easier to convert that to bool
-        if (strcmp(row[2],"N")){
-            Beam_On=0;
-        }
-        else if(strcmp(row[2],"Y")){
-            Beam_on=1;
-        } 
-        else {
-            std::cout << "Error: Unexpected Beam Status" << std::endl;
-        return 1;
-        }
-        run_info.push_back({row[0], row[1], Beam_on});
-        //move on to next row/line (each specific led run)
-    }
-    const char* ohcalhistname="h_peak_ohcal";
-    const char* ihcalhistname="h_peak_ihcal";
-    std::vector<TGraph*> gauss_Peak_graphs_ohcal = CreateTGraphVector(run_info, ohcalhistname);
-    std::vector<TGraph*> gauss_Peak_graphs_ihcal = CreateTGraphVector(run_info, ihcalhistname);
-    // Create a TCanvas to draw the TGraphs
-    TCanvas* c1 = new TCanvas("canvas1", "Peak Parameter graphs", 1800, 1500);
-    c1->Divide(1,2);//divide in to two pads. one for ohcal. one for ihcal
-    // columns, rows// need 3 columns each for ohcal and ihcal
-    //create a vector of tgraphs for sigma, mean, amp
+    // one hist for each run we look over
+    int numRuns = run_info.size();
+    double* Run_Number = new double[numRuns];
     
-    /* // maybe I can clean this up and do it in a loop later
-    for (size_t i = 0; i < myGraphs.size(); ++i) {
-        canvas->cd(i+1); // Activate the canvas
-        CreateTGraphVector[i]->Draw((i == 0) ? "APL" : "PL"); // Use "APL" for the first graph, "PL" for the rest
-    }*/
-
-    //-------------------------------------------
-    //top pad will be ihcal
-    TPad* TopPad = (TPad*)c1->cd(1);
-    //divide in to 3 columns for peak, sigma, amp
-    TopPad->Divide(3,1);
-    //ihcal peak mean
-    TopPad->cd(1);
-    gPad->SetTopMargin(0.12);
-    gPad->SetFillColor(33);
-    gauss_Peak_graphs_ihcal[1]->Draw("A");
-    //ihcal peak sigma
-    TopPad->cd(2);
-    gPad->SetTopMargin(0.12);
-    gPad->SetLeftMargin(0.15);
-    gPad->SetFillColor(33);
-    gauss_Peak_graphs_ihcal[2]->Draw("A");
-    //ihcal peak amplitude
-    TopPad->cd(3);
-    gPad->SetTopMargin(0.12);
-    gPad->SetLeftMargin(0.15);
-    gPad->SetFillColor(33);
-    gauss_Peak_graphs_ihcal[3]->Draw("A");
-    
-    //-----------------------------------------
-    //bottom pad is ohcal
-    TPad* BotPad = (TPad*)c1->cd(2);
-    //divide in to 3 columns for peak, sigma, amp
-    BotPad->Divide(3,1);
-    //ihcal peak mean
-    BotPad->cd(1);
-    gPad->SetTopMargin(0.12);
-    gPad->SetFillColor(33);
-    gauss_Peak_graphs_ihcal[1]->Draw("A");
-    //ihcal peak sigma
-    BotPad->cd(2);
-    gPad->SetTopMargin(0.12);
-    gPad->SetLeftMargin(0.15);
-    gPad->SetFillColor(33);
-    gauss_Peak_graphs_ihcal[2]->Draw("A");
-    //ihcal peak amplitude
-    BotPad->cd(3);
-    gPad->SetTopMargin(0.12);
-    gPad->SetLeftMargin(0.15);
-    gPad->SetFillColor(33);
-    gauss_Peak_graphs_ihcal[3]->Draw("A");
-    
-    //-------------------------------------------
-    // Keep the canvas open to display the graph
-    c1->Update();
-    //canvas->Modified();
-    c1->WaitPrimitive();//wait for the user to close the program
-    //*
+    // Create a vector of vectors to store the values for each bin
+    std::vector<std::vector<float>> ValuesPerRun;
+    ValuesPerRun.resize(numRuns, std::vector<float>(64 * 24, 0.0));
+    //std::vector<std::vector<float>> ValuesPerRun(numRuns, std::vector<float>(64 * 24));//rows x columns
+    //open file
     
 
-    //clean up dynamically allocated memory
-    for (const auto& graph : gauss_Peak_graph_ohcal) {
-        delete graph;
+    // pull up relevant histograms and store data
+    for (int l = 0; l < numRuns; ++l) {
+
+        //open each file and load the relevant histogram
+        TFile *f = new TFile(Form("run_%s.root", run_info[l].run_number.c_str()));
+        TH2F* htemp = static_cast<TH2F*>(f->Get(histogramName));
+
+        // Loop over each bin and store the value in the corresponding vector element
+        for (int row = 0; row < 64; ++row) {
+            for (int col = 0; col < 24; ++col) {
+
+                int bin = htemp->GetBin(row + 1, col + 1); // Get the bin number (note: ROOT bins start from 1)
+                float value = htemp->GetBinContent(bin); // Get the value of the histogram bin
+                ValuesPerRun[l][row * 24 + col] = value; // Store the value in the vector
+            }
+        }
+        f->Close();
+        delete f;
     }
-    for (const auto& graph : gauss_Peak_graph_ihcal) {
-        delete graph;
+
+    // loop over all bins again and find slopes for each
+    std::vector<std::vector<float>> Histogram_eta_phi_slopes(64, std::vector<float>(24, 0.0)); // Initialize to 0.0
+    for (int row = 0; row < 64; ++row) {
+        for (int col = 0; col < 24; ++col) {
+            // Pass the values for each run in that specific bin to Tower_Slope_Fit function
+            // Create a vector to store the values for the current bin from each run
+            std::vector<float> valuesForBin;
+            valuesForBin.reserve(numRuns);
+
+            // Extract the values for the current bin from each run and store them in valuesForBin
+            for (int run = 0; run < numRuns; ++run) {
+                valuesForBin.push_back(ValuesPerRun[run][row * 24 + col]);
+            }
+
+            Histogram_eta_phi_slopes[row,col]=Tower_Slope_Fit(valuesForBin,numRuns);
+        }
     }
-    delete canvas1;
-    delete ohcalhistname;
-    delete ihcalhistname;
-    //*/
-    file.close();
-    return 1;
+    return Histogram_eta_phi_slopes;
 }
+
+void RunForEach(std::string fname)
+{
+	GetLedData* data=new GetLedData(towermap, fname);
+	data->ReadInput();
+	Fun4AllServer *se =Fun4AllServer::instance();
+	se->Verbosity(0);
+	Fun4AllPrdfInputPoolManager* in= new Fun4AllPrdfInputPoolManager("in");
+	in->AddPrdfInputList(filename);
+	se->registerInputManager(in);
+	se->registerSubsystem(data);
+	se->run();
+	data->FileOutput();
+       	std::map<int, std::vector<towerinfo>> sector_towers;
+	for(auto t:data->towermaps){
+	       	data->CalculateChannelData(t); 
+		sector_towers[t.sector].push_back(t); 
+	}
+	for( auto s:sector_towers) data->CalculateSectorData(s);
+	auto sectordata=data->sector_datapts;
+
+}
+
+void BuildTowerMap()
+{
+	for(int i=0; i<32; i++)
+	{
+		int packet=i/4+1;
+		for(int j=0; j<48; j++)
+		{
+			int chn=(i%4)*48+j; 
+			bool inout, ns;
+			if(j<24) ns=true;
+		        else ns=false;
+			int etabin, phibin;
+			etabin=j/2+1;
+			phibin=j%2+i+1;
+		        float eta=(etabin-12)/12; 
+			float phi=(phibin-1)/(2*3.1415);
+			for(int k=0; k<1; k++){
+				std::string label;
+				if(k==0){
+					label="Inner HCal sector %i, Channel %i"
+				       	inout=true;
+					packet=7000+packet;
+				}
+				else{
+					label="outer HCal sector %i, Channel %i"
+				       	inout=false;
+				       	packet=8000+packet;	
+				}
+				towerinfo tower { inout, ns, i, j/2, packet, etabin, phibin, eta, phi, label }; 
+				towermaps[std::makepair<packet, chn>]=tower; 
+			}	
+		}
+	}
+}	
