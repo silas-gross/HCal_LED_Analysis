@@ -13,7 +13,7 @@ LEDRunData::Heuristic(std::vector<int> data, std::vector<int> wf, int npr)
 	chi=chi/ndf; 
 	return chi;
 }
-LEDRunData::FindWaveForm(std::vector*<int> chl_data, int pos)
+LEDRunData::FindWaveForm(std::vector <int> *chl_data, int pos)
 {
 	int n_params=1, width=1; 
 	std::vector<int> model (chl_data->size(), chl_data->at(pos)), data=*chl_data; //model of just peak value

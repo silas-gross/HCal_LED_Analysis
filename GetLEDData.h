@@ -34,7 +34,7 @@ class LEDRunData: public SubsysReco
 			};
 		int getPedestal(std::vector<int> chl_data); 
 		std::map<std::string, float> getPeak(std::vector<int> chl_data, int pedestal);
-		float FindWaveForm(std::vector*<int> chl_data, int pos); 
+		float FindWaveForm(std::vector <int> *chl_data, int pos); 
 		float Heuristic(std::vector<int> data, std::vector<int>wf, int ndf);
 	public:
 	//available global variable
@@ -47,24 +47,24 @@ class LEDRunData: public SubsysReco
 		std::map < std::pair< bool, int> , std::vector<float> > sector_datapts;
 		std::map < std::pair< int, int > , towerinfo > towermaps; //look up table for towers
 		std::map < std::pair< int, int > , std::vector< TH1F > > datahists;
-		std::vector < int > packets (16) ; 
+		std::vector < int > packets (16,0) ; 
 	// methods to run
 		LEDRunData(std::string filename){ 
 			runfiles=filename;
 			for(int i=0; i<packets.size(); i++) packets[i]=i+7001+int(i/8)*1000;
 		};
-		LEDRunData(std::map<std::pair<int, int> std::vector<towerinfo>> towermap, std::string filename){
+		LEDRunData(std::map<std::pair<int, int>, towerinfo> towermap, std::string filename){
 			towermaps=towermap; 
 			runfiles=filename;
-			for(int i=0; i<packets.size(); i++) packets[i]=i+7001+int(i/8)*1000;
+			for(int i=0; i<packets.size(); i++) packets.at(i)=i+7001+int(i/8)*1000;
 		};
 		~LEDRunData();	
-		int process_event (Event *e) overload; 
+		int process_event (Event *e); 
 	        void CalculateChannelData(towerinfo tower);
 		void CalculateSectorData(std::vector<towerinfo> sector);
 		void CalculateMPODData(int InnerOuter, int MPODBoard);
 		void FileOutput();
 		void ReadInput();
 	//get passed mapping such that the class 
-}
+};
 #endif 
