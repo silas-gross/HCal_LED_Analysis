@@ -1,6 +1,6 @@
 //written by Nikhil Kumar, inital commit 7/21/2023
 // headers
-#include <CompareLEDRuns.h>
+#include "CompareLEDRuns.h"
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -21,7 +21,7 @@
 #include <TPad.h>
 #include <TText.h>
 #include <TStyle.h>
-#include <TRoot.h>
+//#include <TRoot.h>
 
 
 // I need to characterize: Ped, peak, ped_rms, peak location, peak width
@@ -541,17 +541,17 @@ void BuildTowerMap()
 			for(int k=0; k<1; k++){
 				std::string label;
 				if(k==0){
-					label="Inner HCal sector %i, Channel %i"
+					label=printf("Inner HCal sector %i, Channel %i", i, chn);
 				       	inout=true;
 					packet=7000+packet;
 				}
 				else{
-					label="outer HCal sector %i, Channel %i"
+					label=printf("outer HCal sector %i, Channel %i", i, chn);
 				       	inout=false;
 				       	packet=8000+packet;	
 				}
 				towerinfo tower { inout, ns, i, j/2, packet, etabin, phibin, eta, phi, label }; 
-				towermaps[std::makepair<packet, chn>]=tower; 
+				towermaps.at(std::make_pair<packet, chn>)=tower; 
 			}	
 		}
 	}

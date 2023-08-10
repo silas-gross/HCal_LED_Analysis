@@ -16,7 +16,7 @@
 
 class CompareLEDRuns
 {
-    private:
+    public:
     //private variables
         //struct
             struct towerinfo {
@@ -35,9 +35,9 @@ class CompareLEDRuns
 		    std::map < std::pair< int, int > , towerinfo > towermaps; //look up table for towers
 
 
-    public: 
+//    public: 
     //public variables, get and set methods etc..
 
-}
+};
 
 #endif

@@ -47,16 +47,16 @@ class LEDRunData: public SubsysReco
 		std::map < std::pair< bool, int> , std::vector<float> > sector_datapts;
 		std::map < std::pair< int, int > , towerinfo > towermaps; //look up table for towers
 		std::map < std::pair< int, int > , std::vector< TH1F > > datahists;
-		std::vector < int > packets (16,0) ; 
+		std::vector < int > packets; 
 	// methods to run
 		LEDRunData(std::string filename){ 
 			runfiles=filename;
-			for(int i=0; i<packets.size(); i++) packets[i]=i+7001+int(i/8)*1000;
+			for(int i=0; i<16; i++){ packets.push_back(i+7001+int(i/8)*1000);}
 		};
 		LEDRunData(std::map<std::pair<int, int>, towerinfo> towermap, std::string filename){
 			towermaps=towermap; 
 			runfiles=filename;
-			for(int i=0; i<packets.size(); i++) packets.at(i)=i+7001+int(i/8)*1000;
+			for(int i=0; i<16; i++) packets.push_back(i+7001+int(i/8)*1000);
 		};
 		~LEDRunData();	
 		int process_event (Event *e); 
