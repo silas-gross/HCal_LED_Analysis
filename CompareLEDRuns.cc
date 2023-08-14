@@ -502,7 +502,7 @@ TGraph2D* slope_TGraph_2D(const std::vector<std::vector<float>>& slopes){
 
 void RunForEach(std::string fname)
 {
-	GetLedData* data=new GetLedData(towermap, fname);
+	LEDRunData* data=new LEDRunData(towermap, fname);
 	data->ReadInput();
 	Fun4AllServer *se =Fun4AllServer::instance();
 	se->Verbosity(0);

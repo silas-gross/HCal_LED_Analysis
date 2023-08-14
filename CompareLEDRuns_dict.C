@@ -42,72 +42,6 @@
 // The generated code does not explicitly qualify STL entities
 namespace std {} using namespace std;
 
-namespace ROOT {
-   static TClass *CompareLEDRuns_Dictionary();
-   static void CompareLEDRuns_TClassManip(TClass*);
-   static void *new_CompareLEDRuns(void *p = nullptr);
-   static void *newArray_CompareLEDRuns(Long_t size, void *p);
-   static void delete_CompareLEDRuns(void *p);
-   static void deleteArray_CompareLEDRuns(void *p);
-   static void destruct_CompareLEDRuns(void *p);
-
-   // Function generating the singleton type initializer
-   static TGenericClassInfo *GenerateInitInstanceLocal(const ::CompareLEDRuns*)
-   {
-      ::CompareLEDRuns *ptr = nullptr;
-      static ::TVirtualIsAProxy* isa_proxy = new ::TIsAProxy(typeid(::CompareLEDRuns));
-      static ::ROOT::TGenericClassInfo 
-         instance("CompareLEDRuns", "CompareLEDRuns.h", 17,
-                  typeid(::CompareLEDRuns), ::ROOT::Internal::DefineBehavior(ptr, ptr),
-                  &CompareLEDRuns_Dictionary, isa_proxy, 0,
-                  sizeof(::CompareLEDRuns) );
-      instance.SetNew(&new_CompareLEDRuns);
-      instance.SetNewArray(&newArray_CompareLEDRuns);
-      instance.SetDelete(&delete_CompareLEDRuns);
-      instance.SetDeleteArray(&deleteArray_CompareLEDRuns);
-      instance.SetDestructor(&destruct_CompareLEDRuns);
-      return &instance;
-   }
-   TGenericClassInfo *GenerateInitInstance(const ::CompareLEDRuns*)
-   {
-      return GenerateInitInstanceLocal((::CompareLEDRuns*)nullptr);
-   }
-   // Static variable to force the class initialization
-   static ::ROOT::TGenericClassInfo *_R__UNIQUE_DICT_(Init) = GenerateInitInstanceLocal((const ::CompareLEDRuns*)nullptr); R__UseDummy(_R__UNIQUE_DICT_(Init));
-
-   // Dictionary for non-ClassDef classes
-   static TClass *CompareLEDRuns_Dictionary() {
-      TClass* theClass =::ROOT::GenerateInitInstanceLocal((const ::CompareLEDRuns*)nullptr)->GetClass();
-      CompareLEDRuns_TClassManip(theClass);
-   return theClass;
-   }
-
-   static void CompareLEDRuns_TClassManip(TClass* ){
-   }
-
-} // end of namespace ROOT
-
-namespace ROOT {
-   // Wrappers around operator new
-   static void *new_CompareLEDRuns(void *p) {
-      return  p ? new(p) ::CompareLEDRuns : new ::CompareLEDRuns;
-   }
-   static void *newArray_CompareLEDRuns(Long_t nElements, void *p) {
-      return p ? new(p) ::CompareLEDRuns[nElements] : new ::CompareLEDRuns[nElements];
-   }
-   // Wrapper around operator delete
-   static void delete_CompareLEDRuns(void *p) {
-      delete ((::CompareLEDRuns*)p);
-   }
-   static void deleteArray_CompareLEDRuns(void *p) {
-      delete [] ((::CompareLEDRuns*)p);
-   }
-   static void destruct_CompareLEDRuns(void *p) {
-      typedef ::CompareLEDRuns current_t;
-      ((current_t*)p)->~current_t();
-   }
-} // end of namespace ROOT for class ::CompareLEDRuns
-
 namespace {
   void TriggerDictionaryInitialization_CompareLEDRuns_dict_Impl() {
     static const char* headers[] = {
@@ -115,8 +49,8 @@ namespace {
 nullptr
     };
     static const char* includePaths[] = {
-"/cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/release/release_new/new.3/include",
-"/cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/release/release_new/new.3/include",
+"/cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/release/release_new/new.8/include",
+"/cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/release/release_new/new.8/include",
 "/cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/opt/sphenix/core/root-6.26.06.p01/include/",
 "/gpfs/mnt/gpfs02/sphenix/user/sgross/HCal_LED_Analysis/",
 nullptr
@@ -127,7 +61,6 @@ nullptr
 #pragma clang diagnostic ignored "-Wignored-attributes"
 #pragma clang diagnostic ignored "-Wreturn-type-c-linkage"
 extern int __Cling_AutoLoading_Map;
-class __attribute__((annotate("$clingAutoload$CompareLEDRuns.h")))  CompareLEDRuns;
 )DICTFWDDCLS";
     static const char* payloadCode = R"DICTPAYLOAD(
 #line 1 "CompareLEDRuns_dict dictionary payload"
@@ -140,7 +73,6 @@ class __attribute__((annotate("$clingAutoload$CompareLEDRuns.h")))  CompareLEDRu
 #undef  _BACKWARD_BACKWARD_WARNING_H
 )DICTPAYLOAD";
     static const char* classesHeaders[] = {
-"CompareLEDRuns", payloadCode, "@",
 nullptr
 };
     static bool isInitialized = false;

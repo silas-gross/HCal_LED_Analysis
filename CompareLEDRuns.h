@@ -10,6 +10,7 @@
 #include <map>
 #include <string>
 #include <fun4all/Fun4AllInputManager.h>
+#include <fun4all/Fun4AllServer.h>
 #include <fun4allraw/Fun4AllPrdfInputManager.h>
 #include <fun4allraw/Fun4AllPrdfInputPoolManager.h>
 #include <fun4all/SubsysReco.h>
