@@ -21,7 +21,7 @@
 #include <TPad.h>
 #include <TText.h>
 #include <TStyle.h>
-//#include <TRoot.h>
+#include <TROOT.h>
 
 
 // I need to characterize: Ped, peak, ped_rms, peak location, peak width
@@ -44,296 +44,11 @@ struct DateRunBeam {
 //function declarations
 GaussFitResult Hist_Fit_1D(const char* filename, const char* histogramName);// pass a filename and a TH1F histname and recive gaussian fit parameters
 float Tower_Slope_Fit(std::vector<float> TowerPeaks);// pass a vector of peak values for a single tower over many runs and recieve the value vs time slope. this will be useful for 2d histograms.
-std::vector<TGraph*> CreateTGraphVector(const std::vector<DateRunBeam>& run_info, const char* histogramName); // pass a vector of all run_info (defined in the csv) and make tgraphs of gaussian sigma, mean, amp using Hist_Fit_1D
-float Channel_Value_Slope(const std::vector<DateRunBeam>& run_info, const char* filename, const char* histogramName);// pass a  TH2F histogram name, and list of runs to look at and find the slope value for all eta phi bins
+std::vector<TGraph*> CreateTGraphVector(const std::vector<DateRunBeam>& Run_info, const char* histogramName); // pass a vector of all Run_info (defined in the csv) and make tgraphs of gaussian sigma, mean, amp using Hist_Fit_1D
+//float Channel_Value_Slope(const std::vector<DateRunBeam>& Run_info, const char* histogramName);// pass a  TH2F histogram name, and list of runs to look at and find the slope value for all eta phi bins
 TGraph2D* slope_TGraph_2D(const std::vector<std::vector<float>>& slopes); // pass 2d vector of slope values for a 2d histogram and return a 2dgraph with the same x y structure and slope value as z 
 
 //main program
-int main{
-    //--------------------------histograms
-    //-----------------parse csv
-    std::ifstream file("runs_and_time.csv");//specify csv file with format (expected):Date, Run Number, Post-Beam (Y/N) 
-    std::string line;
-    std::istringstream iss(line); // Use a stringstream to split the lines into inputs
-    std::string cell;
-    std::vector<std::string> row; // make a vector of strings called "row"
-
-    std::vector<DateRunBeam> Run_info;// remember vector.push_back({el1,el2,el3});
-    //this struct is {string, int, bool}
-    //-------------------------open file
-    if (!file.is_open()){
-        std::cout << "Error opening the file." << std::endl;
-        return 1;
-    }
-    //-------------------------loop over rows in file
-    //-------------------------read run info csv in to memory
-    while (std::getline(file, line)){ //look at each line in the csv and store it in a string
-        while (std::getline(iss, cell, ',')){ //read "iss" stringstream using comma as the delimiter and store the value in the string "cell"
-            row.push_back(cell); //store each "cell" in the vector "row" 
-        }
-        // Process the row data as needed
-        // Print the elements of each row:      
-        // Date, Run Number, Post-Beam (Y/N) 
-        for (const auto &element : row){
-            std::cout << element << " ";
-        }
-        std::cout << std::endl;
-        bool Beam_On;// this is a big distraction. 
-        // maybe it is better to just write beeam status in the csv as 0 and 1. easier to convert that to bool
-        if (strcmp(row[2],"N")){
-            Beam_On=0;
-        }
-        else if(strcmp(row[2],"Y")){
-            Beam_on=1;
-        } 
-        else {
-            std::cout << "Error: Unexpected Beam Status" << std::endl;
-        return 1;
-        }
-        run_info.push_back({row[0], row[1], Beam_on});
-        //move on to next row/line (each specific led run)
-    }
-
-    //create graphs to characterize data
-    //-------------------------------------------------------------------
-    //1d histograms
-    const char* ohcalhistname="h_peak_ohcal";
-    const char* ihcalhistname="h_peak_ihcal";
-    std::vector<TGraph*> gauss_Peak_graphs_ohcal = CreateTGraphVector(run_info, ohcalhistname);//create a vector of tgraphs for sigma, mean, amp
-    std::vector<TGraph*> gauss_Peak_graphs_ihcal = CreateTGraphVector(run_info, ihcalhistname);
-    // 2d histograms. add any you want
-    //These are the ones of interest from silas' branch of hanpu's code
-    /*
-    TH2F *h_2D_pedestal_ohcal;
-    TH2F *h_2D_pedestal_ihcal;
-    TH2F *h_2D_pederms_ohcal;
-    TH2F *h_2D_pederms_ihcal;
-    TH2F *h_2D_peak_ohcal;
-    TH2F *h_2D_peak_ihcal;
-    TH2F *h_2D_peakstd_ohcal;
-    TH2F *h_2D_peakstd_ihcal;
-    //*/    
-    
-    std::vector<std::vector<float>> pedestal_ohcal_slopes_2D=Channel_Value_Slope(run_info, const char* h_2D_pedestal_ohcal);
-    std::vector<std::vector<float>> pedestal_ihcal_slopes_2D=Channel_Value_Slope(run_info, const char* h_2D_pedestal_ihcal);
-
-    std::vector<std::vector<float>> pederms_ohcal_slopes_2D=Channel_Value_Slope(run_info, const char* h_2D_pederms_ohcal);
-    std::vector<std::vector<float>> pederms_ihcal_slopes_2D=Channel_Value_Slope(run_info, const char* h_2D_pederms_ihcal);
-
-    std::vector<std::vector<float>> peak_ohcal_slopes_2D=Channel_Value_Slope(run_info, const char* h_2D_peak_ohcal);
-    std::vector<std::vector<float>> peak_ihcal_slopes_2D=Channel_Value_Slope(run_info, const char* h_2D_peak_ihcal);
-
-    //std::vector<std::vector<float>> 2D_peakstd_ohcal_slopes=Channel_Value_Slope(run_info, const char* h_2D_peakstd_ohcal);
-    //std::vector<std::vector<float>> 2D_peakstd_ihcal_slopes=Channel_Value_Slope(run_info, const char* h_2D_peakstd_ihcal);    
-    //loop over bins and make 2d histograms for each.
-    /*
-    TH2F *h_2D_peak_ohcal = new TH2F("h_2D_peak_ohcal","",24,0.,24.,64,0.,64.);
-	h_2D_peak_ohcal->GetXaxis()->SetTitle("ieta");
-	h_2D_peak_ohcal->GetYaxis()->SetTitle("iphi");
-	TH2F *h_2D_peak_ihcal = new TH2F("h_2D_peak_ihcal","",24,0.,24.,64,0.,64.);
-	h_2D_peak_ihcal->GetXaxis()->SetTitle("ieta");
-	h_2D_peak_ihcal->GetYaxis()->SetTitle("iphi");
-	TH2F *h_2D_peakstd_ohcal = new TH2F("h_2D_peakstd_ohcal","",24,0.,24.,64,0.,64.);
-	h_2D_peakstd_ohcal->GetXaxis()->SetTitle("ieta");
-	h_2D_peakstd_ohcal->GetYaxis()->SetTitle("iphi");
-	TH2F *h_2D_peakstd_ihcal = new TH2F("h_2D_peakstd_ihcal","",24,0.,24.,64,0.,64.);
-	h_2D_peakstd_ihcal->GetXaxis()->SetTitle("ieta");
-	h_2D_peakstd_ihcal->GetYaxis()->SetTitle("iphi");
-    TH2F *h_2D_pedestal_ohcal = new TH2F("h_2D_pedestal_ohcal","",24,0.,24.,64,0.,64.);
-	h_2D_pedestal_ohcal->GetXaxis()->SetTitle("ieta");
-	h_2D_pedestal_ohcal->GetYaxis()->SetTitle("iphi");
-	TH2F *h_2D_pedestal_ihcal = new TH2F("h_2D_pedestal_ihcal","",24,0.,24.,64,0.,64.);
-	h_2D_pedestal_ihcal->GetXaxis()->SetTitle("ieta");
-	h_2D_pedestal_ihcal->GetYaxis()->SetTitle("iphi");
-	//h_2D_pederms_ohcal = new TH2F("h_2D_pederms_ohcal","",24,0.,24.,64,0.,64.);
-	//h_2D_pederms_ohcal->GetXaxis()->SetTitle("ieta");
-	//h_2D_pederms_ohcal->GetYaxis()->SetTitle("iphi");
-	//h_2D_pederms_ihcal = new TH2F("h_2D_pederms_ihcal","",24,0.,24.,64,0.,64.);
-	//h_2D_pederms_ihcal->GetXaxis()->SetTitle("ieta");
-	//h_2D_pederms_ihcal->GetYaxis()->SetTitle("iphi");
-
-    for (int row = 0; row < 64; ++row) {
-        for (int col = 0; col < 24; ++col) {
-            TH2F *h_2D_pedestal_ohcal;
-            TH2F *h_2D_pedestal_ihcal;
-            TH2F *h_2D_pederms_ohcal;
-            TH2F *h_2D_pederms_ihcal;
-            TH2F *h_2D_peak_ohcal;
-            TH2F *h_2D_peak_ihcal;
-        }
-    }
-    */
-    TGraph2D *pedestal_ohcal_graph2D = slope_TGraph_2D(pedestal_ohcal_slopes_2D);
-    TGraph2D *pedestal_ihcal_graph2D = slope_TGraph_2D(pedestal_ihcal_slopes_2D);
-    TGraph2D *pederms_ohcal_graph2D = slope_TGraph_2D(pederms_ohcal_slopes_2D);
-    TGraph2D *pederms_ihcal_graph2D = slope_TGraph_2D(pederms_ihcal_slopes_2D);
-    TGraph2D *peak_ohcal_graph2D = slope_TGraph_2D(peak_ohcal_slopes_2D);
-    TGraph2D *peak_ihcal_graph2D = slope_TGraph_2D(peak_ihcal_slopes_2D);
-    //------------------------------------------------------------------
-    // Create a TCanvas to draw the TGraphs
-    // canvas for 1d histograms
-    TCanvas* c1 = new TCanvas("canvas1", "Peak Parameter graphs", 1800, 1500);
-    c1->Divide(1,2);//divide in to two pads. one for ohcal. one for ihcal
-    // columns, rows// need 3 columns each for ohcal and ihcal
-    
-    
-    /* // maybe I can clean this up and do it in a loop later
-    for (size_t i = 0; i < myGraphs.size(); ++i) {
-        canvas->cd(i+1); // Activate the canvas
-        CreateTGraphVector[i]->Draw((i == 0) ? "APL" : "PL"); // Use "APL" for the first graph, "PL" for the rest
-    }*/
-
-
-    //-------------------------------------------
-    //top pad will be ihcal
-    TPad* TopPad = (TPad*)c1->cd(1);
-    //divide in to 3 columns for peak, sigma, amp
-    TopPad->Divide(3,1);
-    //ihcal peak mean
-    TopPad->cd(1);
-    gPad->SetTopMargin(0.12);
-    gPad->SetFillColor(33);
-    gauss_Peak_graphs_ihcal[1]->Draw("A");
-    //ihcal peak sigma
-    TopPad->cd(2);
-    gPad->SetTopMargin(0.12);
-    gPad->SetLeftMargin(0.15);
-    gPad->SetFillColor(33);
-    gauss_Peak_graphs_ihcal[2]->Draw("A");
-    //ihcal peak amplitude
-    TopPad->cd(3);
-    gPad->SetTopMargin(0.12);
-    gPad->SetLeftMargin(0.15);
-    gPad->SetFillColor(33);
-    gauss_Peak_graphs_ihcal[3]->Draw("A");
-    
-    //-----------------------------------------
-    //bottom pad is ohcal
-    TPad* BotPad = (TPad*)c1->cd(2);
-    //divide in to 3 columns for peak, sigma, amp
-    BotPad->Divide(3,1);
-    //ihcal peak mean
-    BotPad->cd(1);
-    gPad->SetTopMargin(0.12);
-    gPad->SetFillColor(33);
-    gauss_Peak_graphs_ihcal[1]->Draw("A");
-    //ihcal peak sigma
-    BotPad->cd(2);
-    gPad->SetTopMargin(0.12);
-    gPad->SetLeftMargin(0.15);
-    gPad->SetFillColor(33);
-    gauss_Peak_graphs_ihcal[2]->Draw("A");
-    //ihcal peak amplitude
-    BotPad->cd(3);
-    gPad->SetTopMargin(0.12);
-    gPad->SetLeftMargin(0.15);
-    gPad->SetFillColor(33);
-    gauss_Peak_graphs_ihcal[3]->Draw("A");
-    //-----------------------------------------
-    // Keep the canvas open to display the graph
-    c1->Update();
-    //canvas->Modified();
-    c1->WaitPrimitive();//wait for the user to close the program
-    //*
-    c1->print("hcal_peak_parameters.pdf");
-
-    //-------------------------------------------
-    //canvas for 2d histograms/tgraphs.
-    TCanvas* c2 = new TCanvas("canvas2", "2D Slope Graphs", 1800, 1500);
-    c2->Divide(1,3);//divide in to three pads. one for each set of (ohcal+ihcal) 2d histograms
-    //-------------------------------------------
-    //left pad will be h_2D_pedestal_ohcal
-    TPad* LeftPad = (TPad*)c2->cd(1);
-    //divide in to 3 columns for peak, sigma, amp
-    LeftPad->Divide(1,2);
-    //ihcal peak mean
-    LeftPad->cd(1);
-    gPad->SetTopMargin(0.12);
-    gPad->SetFillColor(33);   
-    pedestal_ohcal_graph2D->GetXaxis()->SetTitle("Column Index");
-    pedestal_ohcal_graph2D->GetYaxis()->SetTitle("Row Index");
-    pedestal_ohcal_graph2D->GetZaxis()->SetTitle("Slope Value");
-    pedestal_ohcal_graph2D->Draw("COLZ");
-    //ihcal peak sigma
-    LeftPad->cd(2);
-    gPad->SetTopMargin(0.12);
-    gPad->SetLeftMargin(0.15);
-    gPad->SetFillColor(33);
-    pedestal_ihcal_graph2D->GetXaxis()->SetTitle("Column Index");
-    pedestal_ihcal_graph2D->GetYaxis()->SetTitle("Row Index");
-    pedestal_ihcal_graph2D->GetZaxis()->SetTitle("Slope Value");
-    pedestal_ihcal_graph2D->Draw("COLZ");  
-    //-----------------------------------------
-
-    //middle pad will be h_2D_pederms_ohcal_graph2D
-    TPad* MiddlePad = (TPad*)c2->cd(2);
-    //divide in to 3 columns for peak, sigma, amp
-    MiddlePad->Divide(1,2);
-    //ihcal peak mean
-    MiddlePad->cd(1);
-    gPad->SetTopMargin(0.12);
-    gPad->SetFillColor(33);   
-    pederms_ohcal_graph2D->GetXaxis()->SetTitle("Column Index");
-    pederms_ohcal_graph2D->GetYaxis()->SetTitle("Row Index");
-    pederms_ohcal_graph2D->GetZaxis()->SetTitle("Slope Value");
-    pederms_ohcal_graph2D->Draw("COLZ");
-    //ihcal peak sigma
-    MiddlePad->cd(2);
-    gPad->SetTopMargin(0.12);
-    gPad->SetLeftMargin(0.15);
-    gPad->SetFillColor(33);
-    pederms_ihcal_graph2D->GetXaxis()->SetTitle("Column Index");
-    pederms_ihcal_graph2D->GetYaxis()->SetTitle("Row Index");
-    pederms_ihcal_graph2D->GetZaxis()->SetTitle("Slope Value");
-    pederms_ihcal_graph2D->Draw("COLZ");  
-    //-----------------------------------------
-
-    //right pad will be h_2D_peak_ohcal_graph2D
-    TPad* RightPad = (TPad*)c2->cd(3);
-    //divide in to 3 columns for peak, sigma, amp
-    RightPad->Divide(1,2);
-    //ihcal peak mean
-    RightPad->cd(1);
-    gPad->SetTopMargin(0.12);
-    gPad->SetFillColor(33);   
-    peak_ohcal_graph2D->GetXaxis()->SetTitle("Column Index");
-    peak_ohcal_graph2D->GetYaxis()->SetTitle("Row Index");
-    peak_ohcal_graph2D->GetZaxis()->SetTitle("Slope Value");
-    peak_ohcal_graph2D->Draw("COLZ");
-    //ihcal peak sigma
-    RightPad->cd(2);
-    gPad->SetTopMargin(0.12);
-    gPad->SetLeftMargin(0.15);
-    gPad->SetFillColor(33);
-    peak_ohcal_graph2D->GetXaxis()->SetTitle("Column Index");
-    peak_ohcal_graph2D->GetYaxis()->SetTitle("Row Index");
-    peak_ohcal_graph2D->GetZaxis()->SetTitle("Slope Value");
-    peak_ohcal_graph2D->Draw("COLZ");  
-    //-----------------------------------------
-
-    c2->Update();
-    //c2->Modified();
-    //c2->WaitPrimitive();//wait for the user to close the program
-    //*
-    c2->print("hcal_2D_Histogram_Slopes.pdf");
-    //-------------------------------------------
-    //clean up dynamically allocated memory
-    for (const auto& graph : gauss_Peak_graphs_ohcal) {
-        delete graph;
-    }
-    for (const auto& graph : gauss_Peak_graphs_ihcal) {
-        delete graph;
-    }
-    delete c1;
-    delete c2;
-    delete ohcalhistname;
-    delete ihcalhistname;
-    //*/
-    file.close();
-    return 1;
-}
-
-//function definitions
 GaussFitResult Hist_Fit_1D(const char* filename, const char* histogramName){
     //open the root file called filename.root
     TFile *f = new TFile(Form("run_%s.root", filename));
@@ -354,7 +69,7 @@ GaussFitResult Hist_Fit_1D(const char* filename, const char* histogramName){
     return FitParam;
 }
 
-float Tower_Slope_Fit(std::vector<float> TowerPeaks, int numRuns);{
+float Tower_Slope_Fit(std::vector<float> TowerPeaks, int numRuns){
     // create slope variable and number of runs to look at
     float slope;
     const int Number_runs = TowerPeaks.size();
@@ -374,40 +89,40 @@ float Tower_Slope_Fit(std::vector<float> TowerPeaks, int numRuns);{
     return slope;
 }
 
-std::vector<TGraph*> CreateTGraphVector(const std::vector<DateRunBeam>& run_info, const char* histogramName){
+std::vector<TGraph*> CreateTGraphVector(const std::vector<DateRunBeam>& Run_info, const char* histogramName){
     std::vector<TGraph*> graphVector;
     // Extract data from the vectors and create arrays
-    int numRuns = run_info.size();
+    int numRuns = Run_info.size();
     double* Run_Number = new double[numRuns];
     double* Run_mean = new double[numRuns];
     double* Run_sigma = new double[numRuns];
     double* Run_amp = new double[numRuns];
     //-------------------------process run data
-    vector<GaussFitResult> GaussFitParam;
+    std::vector<GaussFitResult> GaussFitParam;
     for (int i=0; i<numRuns; i++){//
-        GaussFitParam.push_back(Hist_Fit_1D(run_info[i].run_number.c_str(), histogramName)); //execute peak fit for the specific run number and histogramand store results in vector
-        Run_Number[i]=std::stoi(run_info[i].run_number);
+        GaussFitParam.push_back(Hist_Fit_1D(Run_info[i].run_number.c_str(), histogramName)); //execute peak fit for the specific run number and histogramand store results in vector
+        Run_Number[i]=std::stoi(Run_info[i].run_number);
         Run_mean[i]=GaussFitParam[i].mean;
         Run_sigma[i]=GaussFitParam[i].sigma;
-        Run_amp[i]=GaussFitParam[i].amp;  
+        Run_amp[i]=GaussFitParam[i].amplitude;  
     }
     // Create graphs to plot the fit parameters against the run numbers
     TGraph* tgraph1 = new TGraph(numRuns, &Run_Number[0], &Run_mean[0]);
-    graph1->SetTitle("Mean Value vs Run Number");
-    graph1->GetXaxis()->SetTitle("Run Number");
-    graph1->GetYaxis()->SetTitle("Mean Value");
+    tgraph1->SetTitle("Mean Value vs Run Number");
+    tgraph1->GetXaxis()->SetTitle("Run Number");
+    tgraph1->GetYaxis()->SetTitle("Mean Value");
     //graph1->Draw("AP"); // Draw the graph as points 'P', Draw and scale axis 'A'
 
     TGraph* tgraph2 = new TGraph(numRuns, &Run_Number[0], &Run_sigma[0]);
-    graph2->SetTitle("Sigma vs Run Number");
-    graph2->GetXaxis()->SetTitle("Run Number");
-    graph2->GetYaxis()->SetTitle("Sigma");
+    tgraph2->SetTitle("Sigma vs Run Number");
+    tgraph2->GetXaxis()->SetTitle("Run Number");
+    tgraph2->GetYaxis()->SetTitle("Sigma");
     //graph2->Draw("AP");  
 
     TGraph* tgraph3 = new TGraph(numRuns, &Run_Number[0], &Run_amp[0]);
-    graph3->SetTitle("Amplitude vs Run Number");
-    graph3->GetXaxis()->SetTitle("Run Number");
-    graph3->GetYaxis()->SetTitle("Amplitude");
+    tgraph3->SetTitle("Amplitude vs Run Number");
+    tgraph3->GetXaxis()->SetTitle("Run Number");
+    tgraph3->GetYaxis()->SetTitle("Amplitude");
     //graph3->Draw("AP");
     //store graphs in vector
     graphVector.push_back(tgraph1);
@@ -422,10 +137,10 @@ std::vector<TGraph*> CreateTGraphVector(const std::vector<DateRunBeam>& run_info
     return graphVector;
 } 
 
-std::vector<std::vector<float>> Channel_Value_Slope(const std::vector<DateRunBeam>& run_info, const char* histogramName){
+std::vector<std::vector<float>> Channel_Value_Slope(const std::vector<DateRunBeam>& Run_info, const char* histogramName){
 
     // one hist for each run we look over
-    int numRuns = run_info.size();
+    int numRuns = Run_info.size();
     double* Run_Number = new double[numRuns];
     
     // Create a vector of vectors to store the values for each bin
@@ -439,7 +154,7 @@ std::vector<std::vector<float>> Channel_Value_Slope(const std::vector<DateRunBea
     for (int l = 0; l < numRuns; ++l) {
 
         //open each file and load the relevant histogram
-        TFile *f = new TFile(Form("run_%s.root", run_info[l].run_number.c_str()));
+        TFile *f = new TFile(Form("run_%s.root", Run_info[l].run_number.c_str()));
         TH2F* htemp = static_cast<TH2F*>(f->Get(histogramName));
 
         // Loop over each bin and store the value in the corresponding vector element
@@ -556,3 +271,287 @@ void BuildTowerMap()
 		}
 	}
 }	
+int main(){
+    //--------------------------histograms
+    //-----------------parse csv
+    std::ifstream file("runs_and_time.csv");//specify csv file with format (expected):Date, Run Number, Post-Beam (Y/N) 
+    std::string line;
+    std::istringstream iss(line); // Use a stringstream to split the lines into inputs
+    std::string cell;
+    std::vector<std::string> row; // make a vector of strings called "row"
+
+    std::vector<DateRunBeam> Run_info;// remember vector.push_back({el1,el2,el3});
+    //this struct is {string, int, bool}
+    //-------------------------open file
+    if (!file.is_open()){
+        std::cout << "Error opening the file." << std::endl;
+        return 1;
+    }
+    //-------------------------loop over rows in file
+    //-------------------------read run info csv in to memory
+    while (std::getline(file, line)){ //look at each line in the csv and store it in a string
+        while (std::getline(iss, cell, ',')){ //read "iss" stringstream using comma as the delimiter and store the value in the string "cell"
+            row.push_back(cell); //store each "cell" in the vector "row" 
+        }
+        // Process the row data as needed
+        // Print the elements of each row:      
+        // Date, Run Number, Post-Beam (Y/N) 
+        for (const auto &element : row){
+            std::cout << element << " ";
+        }
+        std::cout << std::endl;
+        bool Beam_On;// this is a big distraction. 
+        // maybe it is better to just write beeam status in the csv as 0 and 1. easier to convert that to bool
+        if (strcmp(row[2],"N")){
+            Beam_On=0;
+        }
+        else if(strcmp(row[2],"Y")){
+            Beam_On=1;
+        } 
+        else {
+            std::cout << "Error: Unexpected Beam Status" << std::endl;
+        return 1;
+        }
+        Run_info.push_back({row[0], row[1], Beam_On});
+        //move on to next row/line (each specific led run)
+    }
+
+    //create graphs to characterize data
+    //-------------------------------------------------------------------
+    //1d histograms
+    const char* ohcalhistname="h_peak_ohcal";
+    const char* ihcalhistname="h_peak_ihcal";
+    std::vector<TGraph*> gauss_Peak_graphs_ohcal = CreateTGraphVector(Run_info, ohcalhistname);//create a vector of tgraphs for sigma, mean, amp
+    std::vector<TGraph*> gauss_Peak_graphs_ihcal = CreateTGraphVector(Run_info, ihcalhistname);
+    // 2d histograms. add any you want
+    //These are the ones of interest from silas' branch of hanpu's code
+    
+    const char *h_2D_pedestal_ohcal;
+    const char *h_2D_pedestal_ihcal;
+    const char *h_2D_pederms_ohcal;
+    const char *h_2D_pederms_ihcal;
+    const char *h_2D_peak_ohcal;
+    const char *h_2D_peak_ihcal;
+    const char *h_2D_peakstd_ohcal;
+    const char *h_2D_peakstd_ihcal;
+    //    
+    
+    std::vector<std::vector<float>> pedestal_ohcal_slopes_2D=Channel_Value_Slope(Run_info, h_2D_pedestal_ohcal);
+    std::vector<std::vector<float>> pedestal_ihcal_slopes_2D=Channel_Value_Slope(Run_info, h_2D_pedestal_ihcal);
+
+    std::vector<std::vector<float>> pederms_ohcal_slopes_2D=Channel_Value_Slope(Run_info, h_2D_pederms_ohcal);
+    std::vector<std::vector<float>> pederms_ihcal_slopes_2D=Channel_Value_Slope(Run_info, h_2D_pederms_ihcal);
+
+    std::vector<std::vector<float>> peak_ohcal_slopes_2D=Channel_Value_Slope(Run_info, h_2D_peak_ohcal);
+    std::vector<std::vector<float>> peak_ihcal_slopes_2D=Channel_Value_Slope(Run_info, h_2D_peak_ihcal);
+
+    //std::vector<std::vector<float>> 2D_peakstd_ohcal_slopes=Channel_Value_Slope(Run_info, const char* h_2D_peakstd_ohcal);
+    //std::vector<std::vector<float>> 2D_peakstd_ihcal_slopes=Channel_Value_Slope(Run_info, const char* h_2D_peakstd_ihcal);    
+    //loop over bins and make 2d histograms for each.
+    /*
+    TH2F *h_2D_peak_ohcal = new TH2F("h_2D_peak_ohcal","",24,0.,24.,64,0.,64.);
+	h_2D_peak_ohcal->GetXaxis()->SetTitle("ieta");
+	h_2D_peak_ohcal->GetYaxis()->SetTitle("iphi");
+	TH2F *h_2D_peak_ihcal = new TH2F("h_2D_peak_ihcal","",24,0.,24.,64,0.,64.);
+	h_2D_peak_ihcal->GetXaxis()->SetTitle("ieta");
+	h_2D_peak_ihcal->GetYaxis()->SetTitle("iphi");
+	TH2F *h_2D_peakstd_ohcal = new TH2F("h_2D_peakstd_ohcal","",24,0.,24.,64,0.,64.);
+	h_2D_peakstd_ohcal->GetXaxis()->SetTitle("ieta");
+	h_2D_peakstd_ohcal->GetYaxis()->SetTitle("iphi");
+	TH2F *h_2D_peakstd_ihcal = new TH2F("h_2D_peakstd_ihcal","",24,0.,24.,64,0.,64.);
+	h_2D_peakstd_ihcal->GetXaxis()->SetTitle("ieta");
+	h_2D_peakstd_ihcal->GetYaxis()->SetTitle("iphi");
+    TH2F *h_2D_pedestal_ohcal = new TH2F("h_2D_pedestal_ohcal","",24,0.,24.,64,0.,64.);
+	h_2D_pedestal_ohcal->GetXaxis()->SetTitle("ieta");
+	h_2D_pedestal_ohcal->GetYaxis()->SetTitle("iphi");
+	TH2F *h_2D_pedestal_ihcal = new TH2F("h_2D_pedestal_ihcal","",24,0.,24.,64,0.,64.);
+	h_2D_pedestal_ihcal->GetXaxis()->SetTitle("ieta");
+	h_2D_pedestal_ihcal->GetYaxis()->SetTitle("iphi");
+	//h_2D_pederms_ohcal = new TH2F("h_2D_pederms_ohcal","",24,0.,24.,64,0.,64.);
+	//h_2D_pederms_ohcal->GetXaxis()->SetTitle("ieta");
+	//h_2D_pederms_ohcal->GetYaxis()->SetTitle("iphi");
+	//h_2D_pederms_ihcal = new TH2F("h_2D_pederms_ihcal","",24,0.,24.,64,0.,64.);
+	//h_2D_pederms_ihcal->GetXaxis()->SetTitle("ieta");
+	//h_2D_pederms_ihcal->GetYaxis()->SetTitle("iphi");
+
+    for (int row = 0; row < 64; ++row) {
+        for (int col = 0; col < 24; ++col) {
+            TH2F *h_2D_pedestal_ohcal;
+            TH2F *h_2D_pedestal_ihcal;
+            TH2F *h_2D_pederms_ohcal;
+            TH2F *h_2D_pederms_ihcal;
+            TH2F *h_2D_peak_ohcal;
+            TH2F *h_2D_peak_ihcal;
+        }
+    }
+    */
+    TGraph2D *pedestal_ohcal_graph2D = slope_TGraph_2D(pedestal_ohcal_slopes_2D);
+    TGraph2D *pedestal_ihcal_graph2D = slope_TGraph_2D(pedestal_ihcal_slopes_2D);
+    TGraph2D *pederms_ohcal_graph2D = slope_TGraph_2D(pederms_ohcal_slopes_2D);
+    TGraph2D *pederms_ihcal_graph2D = slope_TGraph_2D(pederms_ihcal_slopes_2D);
+    TGraph2D *peak_ohcal_graph2D = slope_TGraph_2D(peak_ohcal_slopes_2D);
+    TGraph2D *peak_ihcal_graph2D = slope_TGraph_2D(peak_ihcal_slopes_2D);
+    //------------------------------------------------------------------
+    // Create a TCanvas to draw the TGraphs
+    // canvas for 1d histograms
+    TCanvas* c1 = new TCanvas("canvas1", "Peak Parameter graphs", 1800, 1500);
+    c1->Divide(1,2);//divide in to two pads. one for ohcal. one for ihcal
+    // columns, rows// need 3 columns each for ohcal and ihcal
+    
+    
+    /* // maybe I can clean this up and do it in a loop later
+    for (size_t i = 0; i < myGraphs.size(); ++i) {
+        canvas->cd(i+1); // Activate the canvas
+        CreateTGraphVector[i]->Draw((i == 0) ? "APL" : "PL"); // Use "APL" for the first graph, "PL" for the rest
+    }*/
+
+
+    //-------------------------------------------
+    //top pad will be ihcal
+    TPad* TopPad = (TPad*)c1->cd(1);
+    //divide in to 3 columns for peak, sigma, amp
+    TopPad->Divide(3,1);
+    //ihcal peak mean
+    TopPad->cd(1);
+    gPad->SetTopMargin(0.12);
+    gPad->SetFillColor(33);
+    gauss_Peak_graphs_ihcal[1]->Draw("A");
+    //ihcal peak sigma
+    TopPad->cd(2);
+    gPad->SetTopMargin(0.12);
+    gPad->SetLeftMargin(0.15);
+    gPad->SetFillColor(33);
+    gauss_Peak_graphs_ihcal[2]->Draw("A");
+    //ihcal peak amplitude
+    TopPad->cd(3);
+    gPad->SetTopMargin(0.12);
+    gPad->SetLeftMargin(0.15);
+    gPad->SetFillColor(33);
+    gauss_Peak_graphs_ihcal[3]->Draw("A");
+    
+    //-----------------------------------------
+    //bottom pad is ohcal
+    TPad* BotPad = (TPad*)c1->cd(2);
+    //divide in to 3 columns for peak, sigma, amp
+    BotPad->Divide(3,1);
+    //ihcal peak mean
+    BotPad->cd(1);
+    gPad->SetTopMargin(0.12);
+    gPad->SetFillColor(33);
+    gauss_Peak_graphs_ihcal[1]->Draw("A");
+    //ihcal peak sigma
+    BotPad->cd(2);
+    gPad->SetTopMargin(0.12);
+    gPad->SetLeftMargin(0.15);
+    gPad->SetFillColor(33);
+    gauss_Peak_graphs_ihcal[2]->Draw("A");
+    //ihcal peak amplitude
+    BotPad->cd(3);
+    gPad->SetTopMargin(0.12);
+    gPad->SetLeftMargin(0.15);
+    gPad->SetFillColor(33);
+    gauss_Peak_graphs_ihcal[3]->Draw("A");
+    //-----------------------------------------
+    // Keep the canvas open to display the graph
+    c1->Update();
+    //canvas->Modified();
+    c1->WaitPrimitive();//wait for the user to close the program
+    //*
+    c1->Print("hcal_peak_parameters.pdf");
+
+    //-------------------------------------------
+    //canvas for 2d histograms/tgraphs.
+    TCanvas* c2 = new TCanvas("canvas2", "2D Slope Graphs", 1800, 1500);
+    c2->Divide(1,3);//divide in to three pads. one for each set of (ohcal+ihcal) 2d histograms
+    //-------------------------------------------
+    //left pad will be h_2D_pedestal_ohcal
+    TPad* LeftPad = (TPad*)c2->cd(1);
+    //divide in to 3 columns for peak, sigma, amp
+    LeftPad->Divide(1,2);
+    //ihcal peak mean
+    LeftPad->cd(1);
+    gPad->SetTopMargin(0.12);
+    gPad->SetFillColor(33);   
+    pedestal_ohcal_graph2D->GetXaxis()->SetTitle("Column Index");
+    pedestal_ohcal_graph2D->GetYaxis()->SetTitle("Row Index");
+    pedestal_ohcal_graph2D->GetZaxis()->SetTitle("Slope Value");
+    pedestal_ohcal_graph2D->Draw("COLZ");
+    //ihcal peak sigma
+    LeftPad->cd(2);
+    gPad->SetTopMargin(0.12);
+    gPad->SetLeftMargin(0.15);
+    gPad->SetFillColor(33);
+    pedestal_ihcal_graph2D->GetXaxis()->SetTitle("Column Index");
+    pedestal_ihcal_graph2D->GetYaxis()->SetTitle("Row Index");
+    pedestal_ihcal_graph2D->GetZaxis()->SetTitle("Slope Value");
+    pedestal_ihcal_graph2D->Draw("COLZ");  
+    //-----------------------------------------
+
+    //middle pad will be h_2D_pederms_ohcal_graph2D
+    TPad* MiddlePad = (TPad*)c2->cd(2);
+    //divide in to 3 columns for peak, sigma, amp
+    MiddlePad->Divide(1,2);
+    //ihcal peak mean
+    MiddlePad->cd(1);
+    gPad->SetTopMargin(0.12);
+    gPad->SetFillColor(33);   
+    pederms_ohcal_graph2D->GetXaxis()->SetTitle("Column Index");
+    pederms_ohcal_graph2D->GetYaxis()->SetTitle("Row Index");
+    pederms_ohcal_graph2D->GetZaxis()->SetTitle("Slope Value");
+    pederms_ohcal_graph2D->Draw("COLZ");
+    //ihcal peak sigma
+    MiddlePad->cd(2);
+    gPad->SetTopMargin(0.12);
+    gPad->SetLeftMargin(0.15);
+    gPad->SetFillColor(33);
+    pederms_ihcal_graph2D->GetXaxis()->SetTitle("Column Index");
+    pederms_ihcal_graph2D->GetYaxis()->SetTitle("Row Index");
+    pederms_ihcal_graph2D->GetZaxis()->SetTitle("Slope Value");
+    pederms_ihcal_graph2D->Draw("COLZ");  
+    //-----------------------------------------
+
+    //right pad will be h_2D_peak_ohcal_graph2D
+    TPad* RightPad = (TPad*)c2->cd(3);
+    //divide in to 3 columns for peak, sigma, amp
+    RightPad->Divide(1,2);
+    //ihcal peak mean
+    RightPad->cd(1);
+    gPad->SetTopMargin(0.12);
+    gPad->SetFillColor(33);   
+    peak_ohcal_graph2D->GetXaxis()->SetTitle("Column Index");
+    peak_ohcal_graph2D->GetYaxis()->SetTitle("Row Index");
+    peak_ohcal_graph2D->GetZaxis()->SetTitle("Slope Value");
+    peak_ohcal_graph2D->Draw("COLZ");
+    //ihcal peak sigma
+    RightPad->cd(2);
+    gPad->SetTopMargin(0.12);
+    gPad->SetLeftMargin(0.15);
+    gPad->SetFillColor(33);
+    peak_ohcal_graph2D->GetXaxis()->SetTitle("Column Index");
+    peak_ohcal_graph2D->GetYaxis()->SetTitle("Row Index");
+    peak_ohcal_graph2D->GetZaxis()->SetTitle("Slope Value");
+    peak_ohcal_graph2D->Draw("COLZ");  
+    //-----------------------------------------
+
+    c2->Update();
+    //c2->Modified();
+    //c2->WaitPrimitive();//wait for the user to close the program
+    //*
+    c2->Print("hcal_2D_Histogram_Slopes.pdf");
+    //-------------------------------------------
+    //clean up dynamically allocated memory
+    for (const auto& graph : gauss_Peak_graphs_ohcal) {
+        delete graph;
+    }
+    for (const auto& graph : gauss_Peak_graphs_ihcal) {
+        delete graph;
+    }
+    delete c1;
+    delete c2;
+    delete ohcalhistname;
+    delete ihcalhistname;
+    //*/
+    file.close();
+    return 1;
+}
+
