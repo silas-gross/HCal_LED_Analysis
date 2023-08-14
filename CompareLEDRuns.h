@@ -14,9 +14,9 @@
 #include <fun4allraw/Fun4AllPrdfInputPoolManager.h>
 #include <fun4all/SubsysReco.h>
 
-class CompareLEDRuns
-{
-    public:
+//class CompareLEDRuns
+//{
+  //  public:
     //private variables
         //struct
             struct towerinfo {
@@ -38,6 +38,6 @@ class CompareLEDRuns
 //    public: 
     //public variables, get and set methods etc..
 
-};
+//};
 
 #endif
