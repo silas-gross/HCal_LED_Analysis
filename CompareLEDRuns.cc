@@ -43,7 +43,7 @@ struct DateRunBeam {
 
 //function declarations
 GaussFitResult Hist_Fit_1D(const char* filename, const char* histogramName);// pass a filename and a TH1F histname and recive gaussian fit parameters
-float Tower_Slope_Fit(vector<float> TowerPeaks);// pass a vector of peak values for a single tower over many runs and recieve the value vs time slope. this will be useful for 2d histograms.
+float Tower_Slope_Fit(std::vector<float> TowerPeaks);// pass a vector of peak values for a single tower over many runs and recieve the value vs time slope. this will be useful for 2d histograms.
 std::vector<TGraph*> CreateTGraphVector(const std::vector<DateRunBeam>& run_info, const char* histogramName); // pass a vector of all run_info (defined in the csv) and make tgraphs of gaussian sigma, mean, amp using Hist_Fit_1D
 float Channel_Value_Slope(const std::vector<DateRunBeam>& run_info, const char* filename, const char* histogramName);// pass a  TH2F histogram name, and list of runs to look at and find the slope value for all eta phi bins
 TGraph2D* slope_TGraph_2D(const std::vector<std::vector<float>>& slopes); // pass 2d vector of slope values for a 2d histogram and return a 2dgraph with the same x y structure and slope value as z 
@@ -354,7 +354,7 @@ GaussFitResult Hist_Fit_1D(const char* filename, const char* histogramName){
     return FitParam;
 }
 
-float Tower_Slope_Fit(vector<float> TowerPeaks, int numRuns);{
+float Tower_Slope_Fit(std::vector<float> TowerPeaks, int numRuns);{
     // create slope variable and number of runs to look at
     float slope;
     const int Number_runs = TowerPeaks.size();
@@ -502,22 +502,22 @@ TGraph2D* slope_TGraph_2D(const std::vector<std::vector<float>>& slopes){
 
 void RunForEach(std::string fname)
 {
-	LEDRunData* data=new LEDRunData(towermap, fname);
+	LEDRunData* data=new LEDRunData(towermaps, fname);
 	data->ReadInput();
 	Fun4AllServer *se =Fun4AllServer::instance();
 	se->Verbosity(0);
 	Fun4AllPrdfInputPoolManager* in= new Fun4AllPrdfInputPoolManager("in");
-	in->AddPrdfInputList(filename);
+	in->AddPrdfInputList(fname);
 	se->registerInputManager(in);
 	se->registerSubsystem(data);
 	se->run();
 	data->FileOutput();
-       	std::map<int, std::vector<towerinfo>> sector_towers;
+       	std::map<int, std::vector<LEDRunData::towerinfo>> sector_towers;
 	for(auto t:data->towermaps){
-	       	data->CalculateChannelData(t); 
-		sector_towers[t.sector].push_back(t); 
+	       	data->CalculateChannelData(t.second); 
+		sector_towers[t.second.sector].push_back(t.second); 
 	}
-	for( auto s:sector_towers) data->CalculateSectorData(s);
+	for( auto s:sector_towers) data->CalculateSectorData(s.second);
 	auto sectordata=data->sector_datapts;
 
 }
@@ -550,8 +550,8 @@ void BuildTowerMap()
 				       	inout=false;
 				       	packet=8000+packet;	
 				}
-				towerinfo tower { inout, ns, i, j/2, packet, etabin, phibin, eta, phi, label }; 
-				towermaps.at(std::make_pair<packet, chn>)=tower; 
+				LEDRunData::towerinfo tower { inout, ns, i, j/2, packet, etabin, phibin, eta, phi, label }; 
+				towermaps[std::make_pair(packet, chn)]=tower; 
 			}	
 		}
 	}

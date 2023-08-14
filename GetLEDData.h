@@ -20,6 +20,12 @@ class LEDRunData: public SubsysReco
 {
 	private:
 	//tower data struture with definition of tower, taken from the HCal base class
+		int getPedestal(std::vector<int> chl_data); 
+		std::map<std::string, float> getPeak(std::vector<int> chl_data, int pedestal);
+		float FindWaveForm(std::vector <int> *chl_data, int pos); 
+		float Heuristic(std::vector<int> data, std::vector<int>wf, int ndf);
+	public:
+	//available global variable
 		struct towerinfo {
 			bool inner_outer; //false for inner, true for outer
 			bool north_south; //false for North, true for south
@@ -32,12 +38,6 @@ class LEDRunData: public SubsysReco
 			float phi;	//phi value
 			std::string label;	//label for tower to quick parse
 			};
-		int getPedestal(std::vector<int> chl_data); 
-		std::map<std::string, float> getPeak(std::vector<int> chl_data, int pedestal);
-		float FindWaveForm(std::vector <int> *chl_data, int pos); 
-		float Heuristic(std::vector<int> data, std::vector<int>wf, int ndf);
-	public:
-	//available global variable
 		
 		int run_number=1; 
 		std::string runfiles="run_21951.txt";
