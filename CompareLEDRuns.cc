@@ -279,10 +279,11 @@ int main(){
     std::istringstream iss(line); // Use a stringstream to split the lines into inputs
     std::string cell;
     std::vector<std::string> row; // make a vector of strings called "row"
-
+    BuildTowerMap();
     std::vector<DateRunBeam> Run_info;// remember vector.push_back({el1,el2,el3});
     //this struct is {string, int, bool}
     //-------------------------open file
+    //SetsPhenixStyle();
     if (!file.is_open()){
         std::cout << "Error opening the file." << std::endl;
         return 1;
@@ -315,7 +316,6 @@ int main(){
         Run_info.push_back({row[0], row[1], Beam_On});
         //move on to next row/line (each specific led run)
     }
-
     //create graphs to characterize data
     //-------------------------------------------------------------------
     //1d histograms
@@ -550,7 +550,11 @@ int main(){
     delete c2;
     delete ohcalhistname;
     delete ihcalhistname;
-    //*/
+    // Pull data from the GetLEDData class 
+    for(auto run:Run_info){
+	RunForEach(run.fname);
+	
+   }
     file.close();
     return 1;
 }
