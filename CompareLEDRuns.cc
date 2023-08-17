@@ -22,6 +22,8 @@
 #include <TText.h>
 #include <TStyle.h>
 #include <TROOT.h>
+R__LOAD_LIBRARY(libfun4all.so);
+R__LOAD_LIBRARY(libfun4allraw.so);
 
 
 // I need to characterize: Ped, peak, ped_rms, peak location, peak width

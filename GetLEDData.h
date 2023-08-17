@@ -39,15 +39,15 @@ class LEDRunData: public SubsysReco
 			std::string label;	//label for tower to quick parse
 			};
 		
-		static int run_number=1; 
-		static std::string runfiles="run_21951.txt";
-		static int date=19072023; 
-		static std::vector<float> data_points;
-		static std::map < std::pair< int, int > , std::map<std::string, float> > tower_datapts;  
-		static std::map < std::pair< bool, int> , std::vector<float> > sector_datapts;
-		static std::map < std::pair< int, int > , towerinfo > towermaps; //look up table for towers
-		static std::map < std::pair< int, int > , std::vector< TH1F > > datahists;
-		static std::vector < int > packets; 
+		 int run_number=1; 
+		 std::string runfiles="run_21951.txt";
+		 int date=19072023; 
+		 std::vector<float> data_points;
+		 std::map < std::pair< int, int > , std::map<std::string, float> > tower_datapts;  
+		 std::map < std::pair< bool, int> , std::vector<float> > sector_datapts;
+		 std::map < std::pair< int, int > , towerinfo > towermaps; //look up table for towers
+		 std::map < std::pair< int, int > , std::vector< TH1F > > datahists;
+		 std::vector < int > packets; 
 	// methods to run
 		LEDRunData(std::string filename){ 
 			runfiles=filename;
