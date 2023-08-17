@@ -12,7 +12,7 @@ LDFLAGS = -Wl,--no-as-needed  -L$(ONLINE_MAIN)/lib -L$(OFFLINE_MAIN)/lib -lpmoni
 
 
 HDRFILES = $(PACKAGE).h
-LINKFILE = $(PACKAGE)LinkDef.h
+LINKFILE = $(PACKAGE).h
 
 
 ADDITIONAL_SOURCES = 
