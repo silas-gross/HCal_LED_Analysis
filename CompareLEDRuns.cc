@@ -249,6 +249,7 @@ void RunForEach(std::string fname, std::vector <TH1F*> * histos, bool beam)
 		if (beam) histos->at(7)->SetBinContent(int(s.first.first)*32+s.first.second+1, s.second.at(1));
 		else histos->at(6)->SetBinContent(int(s.first.first)*32+s.first.second+1, s.second.at(1));
 	}
+	data->FileOutput();
 		
 }
 
@@ -334,6 +335,21 @@ int main(){
     //create graphs to characterize data
     //-------------------------------------------------------------------
     //1d histograms
+    TH1F* NoBeamPeak=new TH1F("NBP", "LED Peak Height, before Beam; Energy Per Tower [ADC Counts]; N_counts", 100, 0, 2500);
+    TH1F* BeamPeak=new TH1F("BP", "LED Peak Height, after Beam; Energy Per Tower [ADC Counts]; N_counts", 100, 0, 2500);
+    TH1F* NoBeamPeakWidth=new TH1F("NBPW", "LED Peak Width, before Beam; Energy Per Tower [ADC Counts]; N_counts", 100, 0, 2500);
+    TH1F* BeamPeakWidth=new TH1F("BPW", "LED Peak Width, after Beam; Energy Per Tower [ADC Counts]; N_counts", 100, 0, 2500);
+    TH1F* NoBeamPedestalRMS=new TH1F("NBPRMS", "LED Pedestal RMS, before Beam; Energy Per Tower [ADC Counts]; N_counts", 100, 0, 2500);
+    TH1F* BeamPedestalRMS=new TH1F("BPW", "LED Pedestal Width, after Beam; Energy Per Tower [ADC Counts]; N_counts", 100, 0, 2500);
+    TH1F* SectorNBPeaks=new TH1F("SNBP", "LED Peak rms before beam in sector; Sector Number; Energy [ADC Counts]", 64, 0, 64);
+    TH1F* SectorBPeaks=new TH1F("SNBP", "LED Peak rms after beam in sector; Sector Number; Energy [ADC Counts]", 64, 0, 64);
+    std::vector<TH1F*> datahists {NoBeamPeak, BeamPeak, NoBeamPeakWidth, BeamPeakWidth, NoBeamPedestalRMS, BeamPedestalRMS, SectorNBPeaks, SectorBPeaks};
+    // Pull data from the GetLEDData class 
+    for(auto run:Run_info) RunForEach(run.fname, &datahists, run.Beam); 
+   file.close();
+    TFile* runfile=new TFile("LEDdata.root", "RECREATE");
+    for(auto h:datahists) h->Write();
+    runfile->Close();
     const char* ohcalhistname="h_peak_ohcal";
     const char* ihcalhistname="h_peak_ihcal";
     std::vector<TGraph*> gauss_Peak_graphs_ohcal = CreateTGraphVector(Run_info, ohcalhistname);//create a vector of tgraphs for sigma, mean, amp
@@ -565,21 +581,6 @@ int main(){
     delete c2;
     delete ohcalhistname;
     delete ihcalhistname;
-    TH1F* NoBeamPeak=new TH1F("NBP", "LED Peak Height, before Beam; Energy Per Tower [ADC Counts]; N_counts", 100, 0, 2500);
-    TH1F* BeamPeak=new TH1F("BP", "LED Peak Height, after Beam; Energy Per Tower [ADC Counts]; N_counts", 100, 0, 2500);
-    TH1F* NoBeamPeakWidth=new TH1F("NBPW", "LED Peak Width, before Beam; Energy Per Tower [ADC Counts]; N_counts", 100, 0, 2500);
-    TH1F* BeamPeakWidth=new TH1F("BPW", "LED Peak Width, after Beam; Energy Per Tower [ADC Counts]; N_counts", 100, 0, 2500);
-    TH1F* NoBeamPedestalRMS=new TH1F("NBPRMS", "LED Pedestal RMS, before Beam; Energy Per Tower [ADC Counts]; N_counts", 100, 0, 2500);
-    TH1F* BeamPedestalRMS=new TH1F("BPW", "LED Pedestal Width, after Beam; Energy Per Tower [ADC Counts]; N_counts", 100, 0, 2500);
-    TH1F* SectorNBPeaks=new TH1F("SNBP", "LED Peak rms before beam in sector; Sector Number; Energy [ADC Counts]", 64, 0, 64);
-    TH1F* SectorBPeaks=new TH1F("SNBP", "LED Peak rms after beam in sector; Sector Number; Energy [ADC Counts]", 64, 0, 64);
-    std::vector<TH1F*> datahists {NoBeamPeak, BeamPeak, NoBeamPeakWidth, BeamPeakWidth, NoBeamPedestalRMS, BeamPedestalRMS, SectorNBPeaks, SectorBPeaks};
-    // Pull data from the GetLEDData class 
-    for(auto run:Run_info) RunForEach(run.fname, &datahists, run.Beam); 
-   file.close();
-    TFile* runfile=new TFile("LEDdata.root", "RECREATE");
-    for(auto h:datahists) h->Write();
-    runfile->Close();
     return 1;
 }
 
