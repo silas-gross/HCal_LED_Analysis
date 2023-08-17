@@ -39,6 +39,7 @@ struct DateRunBeam {
     std::string date;
     std::string run_number;
     bool Beam; //No->0, Yes->1
+    std::string fname="run_"+run_number+".txt";
 };
 
 //function declarations
@@ -215,9 +216,9 @@ TGraph2D* slope_TGraph_2D(const std::vector<std::vector<float>>& slopes){
 }
 
 
-void RunForEach(std::string fname)
+void RunForEach(std::string fname, std::vector <TH1F*> * histos, bool beam)
 {
-	LEDRunData* data=new LEDRunData(towermaps, fname);
+	LEDRunData* data=new LEDRunData(towermaper, fname);
 	data->ReadInput();
 	Fun4AllServer *se =Fun4AllServer::instance();
 	se->Verbosity(0);
@@ -231,10 +232,24 @@ void RunForEach(std::string fname)
 	for(auto t:data->towermaps){
 	       	data->CalculateChannelData(t.second); 
 		sector_towers[t.second.sector].push_back(t.second); 
+		if (beam){
+			 histos->at(1)->Fill(data->tower_datapts[t.first]["Peak"]);
+			 histos->at(3)->Fill(data->tower_datapts[t.first]["Peak Width"]);
+			 histos->at(5)->Fill(data->tower_datapts[t.first]["Pedestal RMS"]);
+		}
+		else{
+			 histos->at(0)->Fill(data->tower_datapts[t.first]["Peak"]);
+			 histos->at(2)->Fill(data->tower_datapts[t.first]["Peak Width"]);
+			 histos->at(4)->Fill(data->tower_datapts[t.first]["Pedestal RMS"]);
+		    }
 	}
 	for( auto s:sector_towers) data->CalculateSectorData(s.second);
 	auto sectordata=data->sector_datapts;
-
+	for( auto s:sectordata){
+		if (beam) histos->at(7)->SetBinContent(int(s.first.first)*32+s.first.second+1, s.second.at(1));
+		else histos->at(6)->SetBinContent(int(s.first.first)*32+s.first.second+1, s.second.at(1));
+	}
+		
 }
 
 void BuildTowerMap()
@@ -266,7 +281,7 @@ void BuildTowerMap()
 				       	packet=8000+packet;	
 				}
 				LEDRunData::towerinfo tower { inout, ns, i, j/2, packet, etabin, phibin, eta, phi, label }; 
-				towermaps[std::make_pair(packet, chn)]=tower; 
+				towermaper[std::make_pair(packet, chn)]=tower; 
 			}	
 		}
 	}
@@ -297,16 +312,16 @@ int main(){
         // Process the row data as needed
         // Print the elements of each row:      
         // Date, Run Number, Post-Beam (Y/N) 
-        for (const auto &element : row){
+        for (const auto element : row){
             std::cout << element << " ";
         }
         std::cout << std::endl;
         bool Beam_On;// this is a big distraction. 
         // maybe it is better to just write beeam status in the csv as 0 and 1. easier to convert that to bool
-        if (strcmp(row[2],"N")){
+        if (row[2]=="N"){
             Beam_On=0;
         }
-        else if(strcmp(row[2],"Y")){
+        else if(row[2]=="Y"){
             Beam_On=1;
         } 
         else {
@@ -550,12 +565,21 @@ int main(){
     delete c2;
     delete ohcalhistname;
     delete ihcalhistname;
+    TH1F* NoBeamPeak=new TH1F("NBP", "LED Peak Height, before Beam; Energy Per Tower [ADC Counts]; N_counts", 100, 0, 2500);
+    TH1F* BeamPeak=new TH1F("BP", "LED Peak Height, after Beam; Energy Per Tower [ADC Counts]; N_counts", 100, 0, 2500);
+    TH1F* NoBeamPeakWidth=new TH1F("NBPW", "LED Peak Width, before Beam; Energy Per Tower [ADC Counts]; N_counts", 100, 0, 2500);
+    TH1F* BeamPeakWidth=new TH1F("BPW", "LED Peak Width, after Beam; Energy Per Tower [ADC Counts]; N_counts", 100, 0, 2500);
+    TH1F* NoBeamPedestalRMS=new TH1F("NBPRMS", "LED Pedestal RMS, before Beam; Energy Per Tower [ADC Counts]; N_counts", 100, 0, 2500);
+    TH1F* BeamPedestalRMS=new TH1F("BPW", "LED Pedestal Width, after Beam; Energy Per Tower [ADC Counts]; N_counts", 100, 0, 2500);
+    TH1F* SectorNBPeaks=new TH1F("SNBP", "LED Peak rms before beam in sector; Sector Number; Energy [ADC Counts]", 64, 0, 64);
+    TH1F* SectorBPeaks=new TH1F("SNBP", "LED Peak rms after beam in sector; Sector Number; Energy [ADC Counts]", 64, 0, 64);
+    std::vector<TH1F*> datahists {NoBeamPeak, BeamPeak, NoBeamPeakWidth, BeamPeakWidth, NoBeamPedestalRMS, BeamPedestalRMS, SectorNBPeaks, SectorBPeaks};
     // Pull data from the GetLEDData class 
-    for(auto run:Run_info){
-	RunForEach(run.fname);
-	
-   }
-    file.close();
+    for(auto run:Run_info) RunForEach(run.fname, &datahists, run.Beam); 
+   file.close();
+    TFile* runfile=new TFile("LEDdata.root", "RECREATE");
+    for(auto h:datahists) h->Write();
+    runfile->Close();
     return 1;
 }
 

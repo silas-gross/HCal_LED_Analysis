@@ -35,7 +35,7 @@
                 std::string label;	//label for tower to quick parse
 			};
 		    void BuildTowerMap();
-		    std::map < std::pair< int, int > , LEDRunData::towerinfo > towermaps; //look up table for towers
+		    static std::map < std::pair< int, int > , LEDRunData::towerinfo > towermaper; //look up table for towers
 
 
 //    public: 
