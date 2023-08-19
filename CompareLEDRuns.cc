@@ -279,7 +279,7 @@ void BuildTowerMap()
 				}
 				else{
 					label=printf("outer HCal sector %i, Channel %i", i, chn);
-				       	inout=false;I can try to make new methods
+				       	inout=false;//I can try to make new methods
 				       	packet=8000+packet;	
 				}
 				LEDRunData::towerinfo tower { inout, ns, i, j/2, packet, etabin, phibin, eta, phi, label }; 
