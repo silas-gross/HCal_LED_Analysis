@@ -54,7 +54,7 @@ TGraph2D* slope_TGraph_2D(const std::vector<std::vector<float>>& slopes); // pas
 //main program
 GaussFitResult Hist_Fit_1D(const char* filename, const char* histogramName){
     //open the root file called filename.root
-    TFile *f = new TFile(Form("run_%s.root", filename));
+    TFile *f = new TFile(Form("LED_run_data_%s.root", filename));
     // pull up relevant histograms
     //TH1F *htemp=(TH1F*)f->Get(Form("%s", histogram));// c style cast, should work but I will try something else
     TH1F* htemp = static_cast<TH1F*>(f->Get(histogramName));//c++ style cast
@@ -252,7 +252,6 @@ void RunForEach(std::string fname, std::vector <TH1F*> * histos, bool beam)
 		else histos->at(6)->SetBinContent(int(s.first.first)*32+s.first.second+1, s.second.at(1));
 	}
 	data->FileOutput();
-		
 }
 
 void BuildTowerMap()
@@ -280,7 +279,7 @@ void BuildTowerMap()
 				}
 				else{
 					label=printf("outer HCal sector %i, Channel %i", i, chn);
-				       	inout=false;
+				       	inout=false;I can try to make new methods
 				       	packet=8000+packet;	
 				}
 				LEDRunData::towerinfo tower { inout, ns, i, j/2, packet, etabin, phibin, eta, phi, label }; 
@@ -288,8 +287,9 @@ void BuildTowerMap()
 			}	
 		}
 	}
-}	
-int main(){
+}
+
+int CompareLEDRuns(){
     //--------------------------histograms
     //-----------------parse csv
     std::ifstream file("runs_and_time.csv");//specify csv file with format (expected):Date, Run Number, Post-Beam (Y/N) 
