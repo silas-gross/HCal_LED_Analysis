@@ -49,8 +49,8 @@ namespace {
 nullptr
     };
     static const char* includePaths[] = {
-"/cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/release/release_new/new.2/include",
-"/cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/release/release_new/new.2/include",
+"/cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/release/release_new/new.8/include",
+"/cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/release/release_new/new.8/include",
 "/cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/opt/sphenix/core/root-6.26.06.p01/include/",
 "/gpfs/mnt/gpfs02/sphenix/user/sgross/HCal_LED_Analysis/",
 nullptr

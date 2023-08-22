@@ -5,7 +5,7 @@
 #include <fun4allraw/Fun4AllPrdfInputManager.h>
 #include <fun4allraw/Fun4AllPrdfInputPoolManager.h>
 #include <fun4all/SubsysReco.h>
-#include <pmonitor/pmonitor.h>
+//#include <pmonitor/pmonitor.h>
 #include <Event/Event.h>
 #include <Event/EventTypes.h>
 #include <vector>
@@ -21,7 +21,7 @@ class LEDRunData: public SubsysReco
 	private:
 	//tower data struture with definition of tower, taken from the HCal base class
 		int getPedestal(std::vector<int> chl_data); 
-		std::map<std::string, float> getPeak(std::vector<int> chl_data, int pedestal);
+		std::vector <float> getPeak(std::vector<int> chl_data, int pedestal);
 		float FindWaveForm(std::vector <int> *chl_data, int pos); 
 		float Heuristic(std::vector<int> data, std::vector<int>wf, int ndf);
 	public:
@@ -46,7 +46,7 @@ class LEDRunData: public SubsysReco
 		 std::map < std::pair< int, int > , std::map<std::string, float> > tower_datapts;  
 		 std::map < std::pair< bool, int> , std::vector<float> > sector_datapts;
 		 std::map < std::pair< int, int > , towerinfo > towermaps; //look up table for towers
-		 std::map < std::pair< int, int > , std::vector< TH1F > > datahists;
+		 std::map < std::pair< int, int > , std::vector< TH1F* > > datahists;
 		 std::vector < int > packets; 
 	// methods to run
 		LEDRunData(std::string filename){ 
