@@ -270,10 +270,10 @@ void BuildTowerMap()
 			//then odds are farther form phi=0
 			//get eta using chn%16 to get to the specific position in the cable,
 			//then take chn%16/2 to account for doubling in phi 
-			//for cable position, chn/64*8 gives the offset or chn/4  
+			//for cable position, chn/64*8 gives the offset  
 			etabin=(chn%16)/2+chn/64*8;
 			phibin=chn%2+2*i;
-		        float eta=(etabin-12)/12; 
+		        float eta=(etabin-12)/12+1/24; 
 			float phi=(phibin-1)/(2*3.1415);
 			for(int k=0; k<1; k++){
 				std::string label;
