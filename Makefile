@@ -23,15 +23,15 @@ SO = lib$(PACKAGE).so
 
 #$(SO) : $(PACKAGE).cc $(PACKAGE)_dict.C $(ADDITIONAL_SOURCES) $(LINKFILE)
 #	$(CXX) $(CXXFLAGS) -o $@ -shared  $<  $(ADDITIONAL_SOURCES) $(PACKAGE)_dict.C $(LDFLAGS)  $(ADDITIONAL_LIBS)
-$(PACKAGE): $(PACKAGE).o GetLEDData.o
+$(PACKAGE): $(PACKAGE).o 
 $(PACKAGE).o : $(PACKAGE).cc $(PACKAGE)_dict.C $(ADDITIONAL_SOURCES) $(LINKFILE)
 	$(CXX) $(CXXFLAGS) -o $@ -shared  $<  $(ADDITIONAL_SOURCES) $(PACKAGE)_dict.C $(LDFLAGS)  $(ADDITIONAL_LIBS)
 
 $(PACKAGE)_dict.C : $(HDRFILES) $(LINKFILE)
 	rootcint -f $@  -c $(RCFLAGS) $^
 
-GetLEDData.o: $(ADDITIONAL_SOURCES) $(CXX) 
-	 $(CXXFLAGS) -o $@ -shared $< $(LDFLAGS) $(ADDITIONAL_LIBS)
+#GetLEDData.o: $(ADDITIONAL_SOURCES) $(CXX) 
+#	 $(CXXFLAGS) -o $@ -shared $< $(LDFLAGS) $(ADDITIONAL_LIBS)
 
 .PHONY: clean
 
