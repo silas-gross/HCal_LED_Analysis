@@ -297,14 +297,13 @@ void BuildTowerMap()
 int main(){
     //--------------------------histograms
     //-----------------parse csv
-    std::cout<<"This is a desperate attempt" <<std::endl;
     std::ifstream file("runs_and_time.csv");//specify csv file with format (expected):Date, Run Number, Post-Beam (Y/N) 
     std::string line;
-    std::cout<<"have stream file"<<std::endl;
     std::istringstream iss(line); // Use a stringstream to split the lines into inputs
     std::string cell;
     std::vector<std::string> row; // make a vector of strings called "row"
     BuildTowerMap();
+    std::cout<<"Built tower map"<<std::endl;
     std::vector<DateRunBeam> Run_info;// remember vector.push_back({el1,el2,el3});
     //this struct is {string, int, bool}
     //-------------------------open file
@@ -325,20 +324,27 @@ int main(){
         for (const auto element : row){
             std::cout << element << " ";
         }
-        std::cout << std::endl;
+        if(row.size()==0) continue;
         bool Beam_On;// this is a big distraction. 
         // maybe it is better to just write beeam status in the csv as 0 and 1. easier to convert that to bool
-        if (row[2]=="N"){
-            Beam_On=0;
-        }
-        else if(row[2]=="Y"){
-            Beam_On=1;
-        } 
-        else {
-            std::cout << "Error: Unexpected Beam Status" << std::endl;
-        return 1;
-        }
-        Run_info.push_back({row[0], row[1], Beam_On});
+        try{ 
+		if (row[2]=="N"){
+           		 Beam_On=false;
+        	}
+        	else if(row[2]=="Y"){
+            		Beam_On=true;
+        	} 
+        	else {
+            		std::cout << "Error: Unexpected Beam Status" << std::endl;
+        		return 1;
+        	}
+        	Run_info.push_back({row[0], row[1], Beam_On});
+		std::cout<<"Pushing back"<<std::endl;
+	}
+	catch(std::exception& e)
+	{
+		std::cout<<"offending line has exception  " <<Run_info.size() <<std::endl;
+	}
         //move on to next row/line (each specific led run)
     }
     //create graphs to characterize data
