@@ -278,12 +278,12 @@ void BuildTowerMap()
 			for(int k=0; k<=1; k++){
 				std::string label;
 				if(k==0){
-					label=printf("Inner HCal sector %i, Channel %i", i, chn);
+					label=("Inner HCal sector %i, Channel %i", i, chn);
 				       	inout=true;
 					packet=7000+packet;
 				}
 				else{
-					label=printf("outer HCal sector %i, Channel %i", i, chn);
+					label=("outer HCal sector %i, Channel %i", i, chn);
 				       	inout=false;//I can try to make new methods
 				       	packet=8000+packet;	
 				}

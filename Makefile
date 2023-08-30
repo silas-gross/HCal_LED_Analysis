@@ -36,5 +36,5 @@ $(PACKAGE) : $(PACKAGE).cc  $(ADDITIONAL_SOURCES) $(LINKFILE)
 .PHONY: clean
 
 clean: 
-	rm -f $(SO) $(PACKAGE)_dict.C $(PACKAGE)_dict.h
+	rm -f $(PACKAGE) $(SO) $(PACKAGE)_dict.C $(PACKAGE)_dict.h
 
