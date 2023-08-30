@@ -356,7 +356,7 @@ int main(){
     try{
 	for(auto run:Run_info) RunForEach(run.fname, &datahists, run.Beam); 
 	}
-   catch(std::Exception& e) {}
+   catch(std::exception& e) {}
    file.close();
     TFile* runfile=new TFile("LEDdata.root", "RECREATE");
     for(auto h:datahists) h->Write();
