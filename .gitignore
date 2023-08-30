@@ -6,3 +6,4 @@
 *.la*
 *.pcm
 .vscode/settings.json
+.out
