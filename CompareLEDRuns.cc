@@ -275,7 +275,7 @@ void BuildTowerMap()
 			phibin=chn%2+2*i;
 		        float eta=(etabin-12)/12+1/24; 
 			float phi=(phibin-1)/(2*3.1415);
-			for(int k=0; k<1; k++){
+			for(int k=0; k<=1; k++){
 				std::string label;
 				if(k==0){
 					label=printf("Inner HCal sector %i, Channel %i", i, chn);
@@ -352,11 +352,12 @@ int main(){
     TH1F* SectorNBPeaks=new TH1F("SNBP", "LED Peak rms before beam in sector; Sector Number; Energy [ADC Counts]", 64, 0, 64);
     TH1F* SectorBPeaks=new TH1F("SNBP", "LED Peak rms after beam in sector; Sector Number; Energy [ADC Counts]", 64, 0, 64);
     std::vector<TH1F*> datahists {NoBeamPeak, BeamPeak, NoBeamPeakWidth, BeamPeakWidth, NoBeamPedestalRMS, BeamPedestalRMS, SectorNBPeaks, SectorBPeaks};
+   std::cout <<"Booked histos"<<std::endl;
     // Pull data from the GetLEDData class 
-    try{
+   // try{
 	for(auto run:Run_info) RunForEach(run.fname, &datahists, run.Beam); 
-	}
-   catch(std::exception& e) {}
+//	}
+  // catch(std::exception& e) {}
    file.close();
     TFile* runfile=new TFile("LEDdata.root", "RECREATE");
     for(auto h:datahists) h->Write();
