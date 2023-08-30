@@ -361,9 +361,13 @@ int main(){
     TH1F* SectorBPeaks=new TH1F("SNBP", "LED Peak rms after beam in sector; Sector Number; Energy [ADC Counts]", 64, 0, 64);
     std::vector<TH1F*> datahists {NoBeamPeak, BeamPeak, NoBeamPeakWidth, BeamPeakWidth, NoBeamPedestalRMS, BeamPedestalRMS, SectorNBPeaks, SectorBPeaks};
    std::cout <<"Booked histos"<<std::endl;
+   std::cout<<"nRuns " <<Run_info.size() <<std::endl;
     // Pull data from the GetLEDData class 
     try{
-	for(auto run:Run_info) RunForEach(run.fname, &datahists, run.Beam); 
+	for(auto run:Run_info){
+		 RunForEach(run.fname, &datahists, run.Beam); 
+		 std::cout<<run.fname<<std::endl;
+		}
 	}
    catch(std::exception& e) {}
    file.close();
