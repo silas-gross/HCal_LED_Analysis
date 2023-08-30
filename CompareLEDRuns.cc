@@ -297,8 +297,10 @@ void BuildTowerMap()
 int main(){
     //--------------------------histograms
     //-----------------parse csv
+    std::cout<<"This is a desperate attempt" <<std::endl;
     std::ifstream file("runs_and_time.csv");//specify csv file with format (expected):Date, Run Number, Post-Beam (Y/N) 
     std::string line;
+    std::cout<<"have stream file"<<std::endl;
     std::istringstream iss(line); // Use a stringstream to split the lines into inputs
     std::string cell;
     std::vector<std::string> row; // make a vector of strings called "row"
@@ -354,10 +356,10 @@ int main(){
     std::vector<TH1F*> datahists {NoBeamPeak, BeamPeak, NoBeamPeakWidth, BeamPeakWidth, NoBeamPedestalRMS, BeamPedestalRMS, SectorNBPeaks, SectorBPeaks};
    std::cout <<"Booked histos"<<std::endl;
     // Pull data from the GetLEDData class 
-   // try{
+    try{
 	for(auto run:Run_info) RunForEach(run.fname, &datahists, run.Beam); 
-//	}
-  // catch(std::exception& e) {}
+	}
+   catch(std::exception& e) {}
    file.close();
     TFile* runfile=new TFile("LEDdata.root", "RECREATE");
     for(auto h:datahists) h->Write();
