@@ -342,6 +342,7 @@ int main(){
     //create graphs to characterize data
     //-------------------------------------------------------------------
     //1d histograms
+    std::cout<<"Processed all files" <<std::endl;
     TH1F* NoBeamPeak=new TH1F("NBP", "LED Peak Height, before Beam; Energy Per Tower [ADC Counts]; N_counts", 100, 0, 2500);
     TH1F* BeamPeak=new TH1F("BP", "LED Peak Height, after Beam; Energy Per Tower [ADC Counts]; N_counts", 100, 0, 2500);
     TH1F* NoBeamPeakWidth=new TH1F("NBPW", "LED Peak Width, before Beam; Energy Per Tower [ADC Counts]; N_counts", 100, 0, 2500);
@@ -352,7 +353,10 @@ int main(){
     TH1F* SectorBPeaks=new TH1F("SNBP", "LED Peak rms after beam in sector; Sector Number; Energy [ADC Counts]", 64, 0, 64);
     std::vector<TH1F*> datahists {NoBeamPeak, BeamPeak, NoBeamPeakWidth, BeamPeakWidth, NoBeamPedestalRMS, BeamPedestalRMS, SectorNBPeaks, SectorBPeaks};
     // Pull data from the GetLEDData class 
-    for(auto run:Run_info) RunForEach(run.fname, &datahists, run.Beam); 
+    try{
+	for(auto run:Run_info) RunForEach(run.fname, &datahists, run.Beam); 
+	}
+   catch(std::Exception& e) {}
    file.close();
     TFile* runfile=new TFile("LEDdata.root", "RECREATE");
     for(auto h:datahists) h->Write();
