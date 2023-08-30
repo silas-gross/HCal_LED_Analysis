@@ -24,7 +24,7 @@
 #include <TROOT.h>
 R__LOAD_LIBRARY(libfun4all.so);
 R__LOAD_LIBRARY(libfun4allraw.so);
-
+R__LOAD_LIBRARY(libffarawmodules.so);
 
 // I need to characterize: Ped, peak, ped_rms, peak location, peak width
 
@@ -294,7 +294,7 @@ void BuildTowerMap()
 	}
 }
 
-int CompareLEDRuns(){
+int main(){
     //--------------------------histograms
     //-----------------parse csv
     std::ifstream file("runs_and_time.csv");//specify csv file with format (expected):Date, Run Number, Post-Beam (Y/N) 

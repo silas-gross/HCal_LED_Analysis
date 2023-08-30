@@ -59,7 +59,7 @@ class LEDRunData: public SubsysReco
 			runfiles=filename;
 			for(int i=0; i<16; i++) packets.push_back(i+7001+int(i/8)*1000);
 		};
-		~LEDRunData();	
+		~LEDRunData(){};	
 		int process_event (Event *e); 
 	        void CalculateChannelData(towerinfo tower);
 		void CalculateSectorData(std::vector<towerinfo> sector);

@@ -16,6 +16,9 @@
 #include <fun4all/SubsysReco.h>
 //#include "sPhenixStyle.h"
 //#include "sPhenixStyle.C"
+R__LOAD_LIBRARY(libfun4all.so);
+R__LOAD_LIBRARY(libfun4allraw.so);
+R__LOAD_LIBRARY(libffarawmodules.so);
 
 //class CompareLEDRuns
 //{
