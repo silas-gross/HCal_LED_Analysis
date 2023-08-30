@@ -299,7 +299,6 @@ int main(){
     //-----------------parse csv
     std::ifstream file("runs_and_time.csv");//specify csv file with format (expected):Date, Run Number, Post-Beam (Y/N) 
     std::string line;
-    std::istringstream iss(line); // Use a stringstream to split the lines into inputs
     std::string cell;
     std::vector<std::string> row; // make a vector of strings called "row"
     BuildTowerMap();
@@ -315,8 +314,10 @@ int main(){
     //-------------------------loop over rows in file
     //-------------------------read run info csv in to memory
     while (std::getline(file, line)){ //look at each line in the csv and store it in a string
-        while (std::getline(iss, cell, ',')){ //read "iss" stringstream using comma as the delimiter and store the value in the string "cell"
-            row.push_back(cell); //store each "cell" in the vector "row" 
+    	std::istringstream iss(line); // Use a stringstream to split the lines into inputs 
+	while (std::getline(iss, cell, ',')){ //read "iss" stringstream using comma as the delimiter and store the value in the string "cell"
+            row.push_back(cell); //store each "cell" in the vector "row"
+	    std::cout<<cell<<std::endl; 
         }
         // Process the row data as needed
         // Print the elements of each row:      
@@ -336,7 +337,7 @@ int main(){
         	} 
         	else {
             		std::cout << "Error: Unexpected Beam Status" << std::endl;
-        		return 1;
+        		//return 1;
         	}
         	Run_info.push_back({row[0], row[1], Beam_On});
 		std::cout<<"Pushing back"<<std::endl;

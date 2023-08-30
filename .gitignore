@@ -6,4 +6,6 @@
 *.la*
 *.pcm
 .vscode/settings.json
-.out
+*.out
+*.o
+CompareLEDRuns
