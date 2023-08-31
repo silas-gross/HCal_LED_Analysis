@@ -224,8 +224,8 @@ void RunForEach(std::string fname, std::vector <TH1F*> * histos, bool beam)
 	data->ReadInput();
 	Fun4AllServer *se =Fun4AllServer::instance();
 	se->Verbosity(0);
-	Fun4AllPrdfInputPoolManager* in= new Fun4AllPrdfInputPoolManager("in");
-	in->AddPrdfInputList(fname);
+	Fun4AllPrdfInputPoolManager *in= new Fun4AllPrdfInputPoolManager("in");
+	in->AddPrdfInputList(fname)->MakeReference(true);
 	se->registerInputManager(in);
 	se->registerSubsystem(data);
 	se->run();
