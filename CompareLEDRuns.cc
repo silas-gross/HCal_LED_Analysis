@@ -315,6 +315,7 @@ int main(){
     //-------------------------read run info csv in to memory
     while (std::getline(file, line)){ //look at each line in the csv and store it in a string
     	std::istringstream iss(line); // Use a stringstream to split the lines into inputs 
+	row.clear()
 	while (std::getline(iss, cell, ',')){ //read "iss" stringstream using comma as the delimiter and store the value in the string "cell"
             row.push_back(cell); //store each "cell" in the vector "row"
 	    std::cout<<cell<<std::endl; 
