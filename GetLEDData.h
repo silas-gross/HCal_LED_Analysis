@@ -6,6 +6,11 @@
 #include <fun4allraw/Fun4AllPrdfInputManager.h>
 #include <fun4allraw/Fun4AllPrdfInputPoolManager.h>
 #include <fun4all/SubsysReco.h>
+#include <phool/PHCompositeNode.h>
+#include <phool/PHDataNode.h>
+#include <phool/PHNode.h>
+#include <phool/PHNodeIterator.h>
+#include <phool/getClass.h>
 //#include <pmonitor/pmonitor.h>
 #include <Event/Event.h>
 #include <Event/EventTypes.h>
@@ -60,7 +65,7 @@ class LEDRunData: public SubsysReco
 			for(int i=0; i<16; i++) packets.push_back(i+7001+int(i/8)*1000);
 		};
 		~LEDRunData(){};	
-		int process_event (Event *e); 
+		int process_event (PHCompositeNode *topNode) override; 
 	        void CalculateChannelData(towerinfo tower);
 		void CalculateSectorData(std::vector<towerinfo> sector);
 		void CalculateMPODData(int InnerOuter, int MPODBoard);

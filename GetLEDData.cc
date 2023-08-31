@@ -15,9 +15,13 @@ float LEDRunData::Heuristic(std::vector<int> data, std::vector<int> wf, int npr)
 }
 float LEDRunData::FindWaveForm(std::vector <int> *chl_data, int pos)
 {
+	std::cout<<"Starting A* search for waveform" <<std::endl;
 	int n_params=1, width=1; 
+	if (chl_data->size() <= pos) return 0; 
+	std::cout<<"The channel has size of " <<chl_data->size() <<" we look at entry " <<pos <<std::endl;
 	std::vector<int> model (chl_data->size(), chl_data->at(pos)), data=*chl_data; //model of just peak value
 	std::vector<int>param {pos};
+	std::cout<<"Data has size of " <<data.size() <<std::endl;
 	float heuristic=Heuristic(data, model, n_params);
 	std::map<float, std::pair<std::vector<int>, std::vector<int>>> child_models; //this will be used to generate the queue
 	for(int i=0; i<data.size(); i++) //generate the first set of children, linear models
@@ -33,12 +37,14 @@ float LEDRunData::FindWaveForm(std::vector <int> *chl_data, int pos)
 		}
 		float temp_heur=Heuristic(data, temp_model, params.size());
 		child_models[temp_heur]=std::make_pair(params, temp_model);
-	}	
+	}
+	std::cout<<"There are " <<child_models.size() <<" child models" <<std::endl;	
 	while(child_models.size() > 0)
 	{
 		auto md=child_models.begin();
 		float parent_heur=md->first; 
 		auto vals=md->second;
+		std::cout<<"Looking at model with params " <<vals.first.size() <<std::endl;
 		child_models.erase(md);
 		std::sort(vals.first.begin(), vals.first.end());
 		for(int i=0; i<vals.first.size(); i++)
@@ -56,13 +62,15 @@ float LEDRunData::FindWaveForm(std::vector <int> *chl_data, int pos)
 					}
 					std::vector<int> temp_params=vals.first;
 					temp_params.push_back(j);
-				       	float th=Heuristic(data, temp_model, temp_params.size()); 
+				       	float th=Heuristic(data, temp_model, temp_params.size());
+					std::cout<<"There is a new model with heuristic " <<th <<std::endl; 
 					if(th < parent_heur && th>1) child_models[th]=std::make_pair(temp_params, temp_model); 
 					else continue;	
 				}
 			}
 			else if(i==vals.first.size() && vals.first.at(i) != vals.second.size()-1)
 			{
+				std::cout<<"in here" <<std::endl;
 				for(int j=vals.first.at(i)+1; j<vals.second.size(); j++)
 				{
 					float slope=(data[vals.first.at(i)]-data[j])/(vals.first.at(i)-j);
@@ -70,6 +78,7 @@ float LEDRunData::FindWaveForm(std::vector <int> *chl_data, int pos)
 					std::vector<int>temp_model=vals.second; 
 					for(int k=vals.first.at(i); k<vals.second.size(); k++){
 					       	float mp=slope*k+ints;
+						if(temp_model.size() < k) continue; 
 						temp_model.at(k)=(int)(mp);
 					}
 					std::vector<int> temp_params=vals.first;
@@ -82,8 +91,13 @@ float LEDRunData::FindWaveForm(std::vector <int> *chl_data, int pos)
 			}
 			else if( vals.first.at(i) !=0 && vals.first.at(i) != vals.second.size()-1) 
 			{
+				std::cout<<"in a few other things" <<std::endl;
+				int end_pos;
+				if( vals.first.size() <= i+1) end_pos =vals.second.size(); 
+				else end_pos=vals.first.at(i+1); 
 				for(int j=vals.first.at(i)+1; j<vals.first.at(i+1); j++)
 				{
+					std::cout<<"Trying inserting into postion " <<j<<std::endl;
 					float slope1=(data[vals.first.at(i)]-data[j])/(vals.first.at(i)-j);
 					float ints1=data[j]-slope1*vals.first.at(i); 
 					float slope2=(data[vals.first.at(i+1)]-data[j])/(vals.first.at(i+1)-j);
@@ -93,9 +107,10 @@ float LEDRunData::FindWaveForm(std::vector <int> *chl_data, int pos)
 					       	float mp=slope1*k+ints1;
 						temp_model.at(k)=(int)(mp);
 					}
+					std::cout<<"hey, whats going on?"<<std::endl;
 					for(int k=j; k<vals.first.at(i); k++){
 					       	float mp=slope2*k+ints2;
-						temp_model.at(k)=(int)(mp);
+						temp_model.at(k)=(int)mp;
 					}
 					std::vector<int> temp_params=vals.first;
 					temp_params.push_back(j);
@@ -138,6 +153,7 @@ int LEDRunData::getPedestal(std::vector<int> chl_data) //just gets the pedestal 
 }
 std::vector<float> LEDRunData::getPeak(std::vector<int> chl_data, int pedestal) //gets peak value, peak position, peak width, pedestal rms
 {
+	std::cout<<"Im getting the peak right now" <<std::endl;
 	std::vector<float> peak_data;
 	float full_val=0, pos=0, width=0, rms=0, pk=0; 
 	for(int sp=0; sp<chl_data.size(); sp++){
@@ -147,20 +163,35 @@ std::vector<float> LEDRunData::getPeak(std::vector<int> chl_data, int pedestal) 
 			pos=sp;
 		}
 	}
+	std::cout<<"Found peak at sample number " <<pos <<" with height " <<pk <<std::endl;
 	peak_data.push_back(pk);
 	peak_data.push_back(pos);
 	//now need to do waveform fitting, just going to do a very quick a* search
+	std::cout<<"Peak data has size " <<peak_data.size() <<std::endl;
 	width=FindWaveForm(&chl_data, (int)pos);
+	std::cout<<"Waveform has been found" <<std::endl;
 	peak_data.push_back(width);
 	for(int sp:chl_data) rms+=pow(sp-pedestal, 2);
 	rms=sqrt(1/(chl_data.size())*rms);
 	peak_data.push_back(rms);
 	return peak_data;
 }	
-int LEDRunData::process_event(Event *e){
-	
+int LEDRunData::process_event(PHCompositeNode *topNode){
+//	std::vector<Event *> subeventeventvec; 
+	try{ 
+	const std::string &inputnodename="PRDF";
+	Event* e = findNode::getClass<Event>(topNode, inputnodename);
+	std::cout<<"Hit a new event"<<std::endl;
 	for(auto pid:packets){
+		std::cout<<pid<<std::endl;
 		float evtval=0; 
+		try{
+			e->getPacket(pid);
+		}
+		catch(std::exception* e) {
+			std::cout<<"no packet with number " <<pid <<std::endl; 
+			continue;
+		}
 		Packet* p=e->getPacket(pid);
 		if(!p) continue;
 	       for(int c=0; c<p->iValue(0, "CHANNELS"); c++){
@@ -169,9 +200,14 @@ int LEDRunData::process_event(Event *e){
 	 		evtval+=p->iValue(s, c);
 			channel_data.push_back(p->iValue(s,c)); 	
 		}
+		std::cout<<"have loaded in the data"<<std::endl;
+		if (channel_data.size()<3) continue;
 		int pedestal=getPedestal(channel_data);
+		std::cout<<"have the pedestal" <<std::endl;
 		std::vector<float>pk_data=getPeak(channel_data, pedestal);
+		std::cout<<"peak data found" <<std::endl;
 		std::pair<int, int> location (pid,c);
+		std::cout<<"have the location pair, the datahists have size" << datahists.size() <<std::endl;
 		datahists[location][0]->Fill(evtval); 
 		datahists[location][1]->Fill(pk_data[0]);
 		datahists[location][2]->Fill(pedestal);
@@ -181,6 +217,8 @@ int LEDRunData::process_event(Event *e){
 	       }
 	}	       
 	return 1;
+	}
+	catch(std::exception* e1) {return 1;}
 }
 void LEDRunData::ReadInput(){
 	
