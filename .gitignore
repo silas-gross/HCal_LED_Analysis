@@ -9,3 +9,4 @@
 *.out
 *.o
 CompareLEDRuns
+condor*
