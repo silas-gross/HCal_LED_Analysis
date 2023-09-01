@@ -47,12 +47,30 @@ float LEDRunData::FindWaveForm(std::vector <int> *chl_data, int pos)
 //		std::cout<<"Looking at model with " <<vals.first.size() <<" many parameters" <<std::endl;
 		child_models.erase(md);
 		std::sort(vals.first.begin(), vals.first.end());
-		for(int i=0; i<vals.first.size(); i++)
+		if(vals.first.size() > vals.second.size()/3)
 		{
+			child_models.clear();
+			break;
+		}
+	//	std::cout<<"There are " <<child_models.size() <<" models remaining to look at" <<std::endl;
+		#pragma omp parallel for private(i,j,k,temp_model)
+		for(int i=0; i<vals.first.size(); i++)
+			{
 			if(i==0 && vals.first.at(i) != 0)
 			{
 				for(int j=0; j<vals.first.at(i); j++)
 				{
+					bool pres=false;
+					for(int k:vals.first)
+					{
+						 if(j==k)
+							{
+								pres=true; 
+								break;
+							}
+					}
+					if(pres) continue;
+						
 					float slope=(data[vals.first.at(i)]-data[j])/(vals.first.at(i)-j);
 					float ints=data[j]-slope*vals.first.at(i); 
 					std::vector<int>temp_model=vals.second; 
@@ -73,6 +91,16 @@ float LEDRunData::FindWaveForm(std::vector <int> *chl_data, int pos)
 				//std::cout<<"in here" <<std::endl;
 				for(int j=vals.first.at(i)+1; j<vals.second.size(); j++)
 				{
+					bool pres=false;
+					for(int k:vals.first)
+					{
+						 if(j==k)
+							{
+								pres=true; 
+								break;
+							}
+					}
+					if(pres) continue;
 					float slope=(data[vals.first.at(i)]-data[j])/(vals.first.at(i)-j);
 					float ints=data[j]-slope*vals.first.at(i); 
 					std::vector<int>temp_model=vals.second; 
@@ -121,7 +149,7 @@ float LEDRunData::FindWaveForm(std::vector <int> *chl_data, int pos)
 					std::vector<int> temp_params=vals.first;
 					temp_params.push_back(j);
 				       	float th=Heuristic(data, temp_model, temp_params.size()); 
-					if(th < parent_heur && thi > 1) child_models[th]=std::make_pair(temp_params, temp_model); 
+					if(th < parent_heur && th > 1) child_models[th]=std::make_pair(temp_params, temp_model); 
 					else continue;	
 				}
 				
@@ -180,6 +208,7 @@ std::vector<float> LEDRunData::getPeak(std::vector<int> chl_data, int pedestal) 
 	for(int sp:chl_data) rms+=pow(sp-pedestal, 2);
 	rms=sqrt(1/(chl_data.size())*rms);
 	peak_data.push_back(rms);
+	chl_data.clear();
 	return peak_data;
 }	
 int LEDRunData::process_event(PHCompositeNode *topNode){
@@ -200,7 +229,8 @@ int LEDRunData::process_event(PHCompositeNode *topNode){
 		}
 		Packet* p=e->getPacket(pid);
 		if(!p) continue;
-	       for(int c=0; c<p->iValue(0, "CHANNELS"); c++){
+	       #pragma opm for private(c, channel_data)
+		for(int c=0; c<p->iValue(0, "CHANNELS"); c++){
 		 std::vector<int> channel_data;	
 		 for(auto s=0; s<31; s++){
 	 		evtval+=p->iValue(s, c);
@@ -220,6 +250,7 @@ int LEDRunData::process_event(PHCompositeNode *topNode){
 		datahists[location][3]->Fill(pk_data[3]);
 		datahists[location][4]->Fill(pk_data[1]);
 		datahists[location][5]->Fill(pk_data[2]);
+		channel_data.clear();
 	       }
 	}	       
 	return 1;

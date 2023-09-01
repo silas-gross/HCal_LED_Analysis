@@ -1,0 +1,14 @@
+Universe 	= vanilla
+Executable 	= /gpfs/mnt/gpfs02/sphenix/user/sgross/HCal_LED_Analysis/CompareLEDs.sh
+Arguments       = 
+Output  	= /gpfs/mnt/gpfs02/sphenix/user/sgross/HCal_LED_Analysis/condor.out
+Error 		=/gpfs/mnt/gpfs02/sphenix/user/sgross/HCal_LED_Analysis/condor.err
+Log  		=/gpfs/mnt/gpfs02/sphenix/user/sgross/HCal_LED_Analysis/condor.log
+Initialdir  	= /gpfs/mnt/gpfs02/sphenix/user/sgross/HCal_LED_Analysis
+PeriodicHold 	= (NumJobStarts>=1 && JobStatus == 1)
+accounting_group = group_phenix.u
+accounting_group_user = sgross
+request_memory = 8192MB
+Priority = 90
+job_lease_duration = 3600
+Queue 1

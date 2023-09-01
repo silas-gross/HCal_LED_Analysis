@@ -21,7 +21,7 @@
 #include <math.h>
 #include <algorithm>
 #include <utility>
-
+#include <omp.h>
 class LEDRunData: public SubsysReco
 {
 	private:
