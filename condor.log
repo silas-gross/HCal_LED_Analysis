@@ -1,42 +1,20 @@
-000 (1540161.000.000) 2023-08-31 18:54:00 Job submitted from host: <130.199.48.81:9618?addrs=130.199.48.81-9618&alias=rcas2062.rcf.bnl.gov&noUDP&sock=schedd_9125_0bfa>
+000 (5001669.000.000) 2023-09-01 04:31:08 Job submitted from host: <130.199.48.83:9618?addrs=130.199.48.83-9618&alias=rcas2064.rcf.bnl.gov&noUDP&sock=schedd_8678_93b2>
 ...
-001 (1540161.000.000) 2023-08-31 18:55:21 Job executing on host: <130.199.207.220:9618?addrs=130.199.207.220-9618&alias=spool1507.sdcc.bnl.gov&noUDP&sock=startd_17472_c454>
+001 (5001669.000.000) 2023-09-01 04:31:31 Job executing on host: <130.199.150.80:9618?addrs=130.199.150.80-9618&alias=spool1561.sdcc.bnl.gov&noUDP&sock=startd_36566_c6e1>
 ...
-006 (1540161.000.000) 2023-08-31 18:55:22 Image size of job updated: 17
-	0  -  MemoryUsage of job (MB)
-	0  -  ResidentSetSize of job (KB)
+006 (5001669.000.000) 2023-09-01 04:31:39 Image size of job updated: 379604
+	229  -  MemoryUsage of job (MB)
+	233540  -  ResidentSetSize of job (KB)
 ...
-005 (1540161.000.000) 2023-08-31 18:55:24 Job terminated.
-	(1) Normal termination (return value 127)
-		Usr 0 00:00:00, Sys 0 00:00:00  -  Run Remote Usage
-		Usr 0 00:00:00, Sys 0 00:00:00  -  Run Local Usage
-		Usr 0 00:00:00, Sys 0 00:00:00  -  Total Remote Usage
-		Usr 0 00:00:00, Sys 0 00:00:00  -  Total Local Usage
-	0  -  Run Bytes Sent By Job
-	0  -  Run Bytes Received By Job
-	0  -  Total Bytes Sent By Job
-	0  -  Total Bytes Received By Job
-	Partitionable Resources :    Usage  Request Allocated 
-	   Cpus                 :                 1         1 
-	   Disk (KB)            :       17       17   6680961 
-	   Memory (MB)          :        0     8192      8192 
-	   xferslots            :                           0 
-
-	Job terminated of its own accord at 2023-08-31T22:55:22Z.
+006 (5001669.000.000) 2023-09-01 04:36:39 Image size of job updated: 583048
+	229  -  MemoryUsage of job (MB)
+	233540  -  ResidentSetSize of job (KB)
 ...
-000 (1540162.000.000) 2023-09-01 02:55:35 Job submitted from host: <130.199.48.81:9618?addrs=130.199.48.81-9618&alias=rcas2062.rcf.bnl.gov&noUDP&sock=schedd_9125_0bfa>
+006 (5001669.000.000) 2023-09-01 04:41:40 Image size of job updated: 623568
+	268  -  MemoryUsage of job (MB)
+	274060  -  ResidentSetSize of job (KB)
 ...
-001 (1540162.000.000) 2023-09-01 02:56:17 Job executing on host: <130.199.207.220:9618?addrs=130.199.207.220-9618&alias=spool1507.sdcc.bnl.gov&noUDP&sock=startd_17472_c454>
-...
-007 (1540162.000.000) 2023-09-01 02:56:17 Shadow exception!
-	Error from slot1_71@spool1507.sdcc.bnl.gov: Failed to execute '/gpfs/mnt/gpfs02/sphenix/user/sgross/HCal_LED_Analysis/CompareLEDs.sh': (errno=13: 'Permission denied')
-	0  -  Run Bytes Sent By Job
-	0  -  Run Bytes Received By Job
-...
-012 (1540162.000.000) 2023-09-01 02:56:17 Job was held.
-	Error from slot1_71@spool1507.sdcc.bnl.gov: Failed to execute '/gpfs/mnt/gpfs02/sphenix/user/sgross/HCal_LED_Analysis/CompareLEDs.sh': (errno=13: 'Permission denied')
-	Code 6 Subcode 13
-...
-009 (1540162.000.000) 2023-09-01 02:56:58 Job was aborted.
-	via condor_rm (by user sgross)
+006 (5001669.000.000) 2023-09-01 05:16:43 Image size of job updated: 649308
+	293  -  MemoryUsage of job (MB)
+	299868  -  ResidentSetSize of job (KB)
 ...

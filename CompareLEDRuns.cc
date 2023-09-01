@@ -374,7 +374,7 @@ int main(){
 	}
    catch(std::exception& e) {}
    file.close();
-    TFile* runfile=new TFile("LEDdata.root", "RECREATE");
+    TFile* runfile=new TFile("LEDdata_all.root", "RECREATE");
     for(auto h:datahists) h->Write();
     runfile->Close();
     const char* ohcalhistname="h_peak_ohcal";
