@@ -202,10 +202,23 @@ std::vector<float> LEDRunData::getPeak(std::vector<int> chl_data, int pedestal) 
 	peak_data.push_back(pos);
 	//now need to do waveform fitting, just going to do a very quick a* search
 	std::cout<<"Peak data has size " <<peak_data.size() <<std::endl;
-	width=FindWaveForm(&chl_data, (int)pos);
+	if(_fullform) width=FindWaveForm(&chl_data, (int)pos);
+	else{
+		int le=0, ge=0;
+		for(int sp=0; sp<chl_data->size(); sp++)
+		{
+			chl_data->at(sp)-=model.at(sp);
+			if(model.at(sp)>= data.at(pos)*0.475 && model.at(sp)<=data.at(pos)*0.515 && ge==0) le=sp; 
+			if(model.at(sp)>=data.at(pos)*0.6) ge=sp; 
+			if(model.at(sp)>= data.at(pos)*0.475 && model.at(sp)<=data.at(pos)*0.515 && ge!=0) ge=sp; 
+			
+		}
+		width=ge-le;
+	}		
 	std::cout<<"Waveform has been found" <<std::endl;
 	peak_data.push_back(width);
 	for(int sp:chl_data) rms+=pow(sp-pedestal, 2);
+	if(!_fullform) for(int sp=0; sp<5; sp++) rms+=pow(chl_data(sp)-pedestal, 2);		
 	rms=sqrt(1/(chl_data.size())*rms);
 	peak_data.push_back(rms);
 	chl_data.clear();

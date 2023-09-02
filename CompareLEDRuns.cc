@@ -220,7 +220,8 @@ TGraph2D* slope_TGraph_2D(const std::vector<std::vector<float>>& slopes){
 
 void RunForEach(std::string fname, std::vector <TH1F*> * histos, bool beam)
 {
-	LEDRunData* data=new LEDRunData(towermaper, fname);
+	bool process_full=true; //does the full waveform processing, turn to false to run faster
+	LEDRunData* data=new LEDRunData(towermaper, fname, process_full);
 	data->ReadInput();
 	Fun4AllServer *se =Fun4AllServer::instance();
 	se->Verbosity(0);

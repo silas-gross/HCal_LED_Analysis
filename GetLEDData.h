@@ -54,14 +54,17 @@ class LEDRunData: public SubsysReco
 		 std::map < std::pair< int, int > , towerinfo > towermaps; //look up table for towers
 		 std::map < std::pair< int, int > , std::vector< TH1F* > > datahists;
 		 std::vector < int > packets; 
+		 const bool _fullform=true;
 	// methods to run
-		LEDRunData(std::string filename){ 
+		LEDRunData(std::string filename, bool pr){ 
 			runfiles=filename;
 			for(int i=0; i<16; i++){ packets.push_back(i+7001+int(i/8)*1000);}
+			_fullform=pr;
 		};
-		LEDRunData(std::map<std::pair<int, int>, towerinfo> towermap, std::string filename){
+		LEDRunData(std::map<std::pair<int, int>, towerinfo> towermap, std::string filename, bool pr){
 			towermaps=towermap; 
 			runfiles=filename;
+			_fullform=pr;
 			for(int i=0; i<16; i++) packets.push_back(i+7001+int(i/8)*1000);
 		};
 		~LEDRunData(){};	
