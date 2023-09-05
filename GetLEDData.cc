@@ -15,7 +15,7 @@ float LEDRunData::Heuristic(std::vector<int> data, std::vector<int> wf, int npr)
 }
 float LEDRunData::FindWaveForm(std::vector <int> *chl_data, int pos)
 {
-	std::cout<<"Starting A* search for waveform" <<std::endl;
+//	std::cout<<"Starting A* search for waveform" <<std::endl;
 	int n_params=1, width=1; 
 	if (chl_data->size() <= pos) return 0; 
 //	std::cout<<"The channel has size of " <<chl_data->size() <<" we look at entry " <<pos <<std::endl;
@@ -38,7 +38,7 @@ float LEDRunData::FindWaveForm(std::vector <int> *chl_data, int pos)
 		float temp_heur=Heuristic(data, temp_model, params.size());
 		child_models[temp_heur]=std::make_pair(params, temp_model);
 	}
-	std::cout<<"There are " <<child_models.size() <<" child models" <<std::endl;	
+//	std::cout<<"There are " <<child_models.size() <<" child models" <<std::endl;	
 	while(child_models.size() > 0)
 	{
 		auto md=child_models.begin();
@@ -187,7 +187,7 @@ int LEDRunData::getPedestal(std::vector<int> chl_data) //just gets the pedestal 
 }
 std::vector<float> LEDRunData::getPeak(std::vector<int> chl_data, int pedestal) //gets peak value, peak position, peak width, pedestal rms
 {
-	std::cout<<"Im getting the peak right now" <<std::endl;
+//	std::cout<<"Im getting the peak right now" <<std::endl;
 	std::vector<float> peak_data;
 	float full_val=0, pos=0, width=0, rms=0, pk=0; 
 	for(int sp=0; sp<chl_data.size(); sp++){
@@ -197,28 +197,27 @@ std::vector<float> LEDRunData::getPeak(std::vector<int> chl_data, int pedestal) 
 			pos=sp;
 		}
 	}
-	std::cout<<"Found peak at sample number " <<pos <<" with height " <<pk <<std::endl;
+//	std::cout<<"Found peak at sample number " <<pos <<" with height " <<pk <<std::endl;
 	peak_data.push_back(pk);
 	peak_data.push_back(pos);
 	//now need to do waveform fitting, just going to do a very quick a* search
-	std::cout<<"Peak data has size " <<peak_data.size() <<std::endl;
+//	std::cout<<"Peak data has size " <<peak_data.size() <<std::endl;
 	if(_fullform) width=FindWaveForm(&chl_data, (int)pos);
 	else{
 		int le=0, ge=0;
-		for(int sp=0; sp<chl_data->size(); sp++)
+		for(int sp=0; sp<chl_data.size(); sp++)
 		{
-			chl_data->at(sp)-=model.at(sp);
-			if(model.at(sp)>= data.at(pos)*0.475 && model.at(sp)<=data.at(pos)*0.515 && ge==0) le=sp; 
-			if(model.at(sp)>=data.at(pos)*0.6) ge=sp; 
-			if(model.at(sp)>= data.at(pos)*0.475 && model.at(sp)<=data.at(pos)*0.515 && ge!=0) ge=sp; 
+			if(chl_data.at(sp)>= chl_data.at(pos)*0.475 && chl_data.at(sp)<=chl_data.at(pos)*0.515 && ge==0) le=sp; 
+			if(chl_data.at(sp)>=chl_data.at(pos)*0.6) ge=sp; 
+			if(chl_data.at(sp)>= chl_data.at(pos)*0.475 && chl_data.at(sp)<=chl_data.at(pos)*0.515 && ge!=0) ge=sp; 
 			
 		}
 		width=ge-le;
 	}		
-	std::cout<<"Waveform has been found" <<std::endl;
+//	std::cout<<"Waveform has been found" <<std::endl;
 	peak_data.push_back(width);
 	for(int sp:chl_data) rms+=pow(sp-pedestal, 2);
-	if(!_fullform) for(int sp=0; sp<5; sp++) rms+=pow(chl_data(sp)-pedestal, 2);		
+	if(!_fullform) for(int sp=0; sp<5; sp++) rms+=pow(chl_data[sp]-pedestal, 2);		
 	rms=sqrt(1/(chl_data.size())*rms);
 	peak_data.push_back(rms);
 	chl_data.clear();
@@ -229,9 +228,9 @@ int LEDRunData::process_event(PHCompositeNode *topNode){
 	try{ 
 	const std::string &inputnodename="PRDF";
 	Event* e = findNode::getClass<Event>(topNode, inputnodename);
-	std::cout<<"Hit a new event"<<std::endl;
+//	std::cout<<"Hit a new event"<<std::endl;
 	for(auto pid:packets){
-		std::cout<<pid<<std::endl;
+		//std::cout<<pid<<std::endl;
 		float evtval=0; 
 		try{
 			e->getPacket(pid);
@@ -249,14 +248,14 @@ int LEDRunData::process_event(PHCompositeNode *topNode){
 	 		evtval+=p->iValue(s, c);
 			channel_data.push_back(p->iValue(s,c)); 	
 		}
-		std::cout<<"have loaded in the data"<<std::endl;
+//		std::cout<<"have loaded in the data"<<std::endl;
 		if (channel_data.size()<3) continue;
 		int pedestal=getPedestal(channel_data);
-		std::cout<<"have the pedestal" <<std::endl;
+//		std::cout<<"have the pedestal" <<std::endl;
 		std::vector<float>pk_data=getPeak(channel_data, pedestal);
-		std::cout<<"peak data found" <<std::endl;
+//		std::cout<<"peak data found" <<std::endl;
 		std::pair<int, int> location (pid,c);
-		std::cout<<"have the location pair, the datahists have size" << datahists.size() <<std::endl;
+//		std::cout<<"have the location pair, the datahists have size" << datahists.size() <<std::endl;
 		datahists[location][0]->Fill(evtval); 
 		datahists[location][1]->Fill(pk_data[0]);
 		datahists[location][2]->Fill(pedestal);
@@ -280,11 +279,11 @@ void LEDRunData::ReadInput(){
 			if(ioi%2) InnerOuter="Outer"; 
 			else InnerOuter="Inner";
 			sector=pid%8+c/48;
-			TH1F* hnew=new TH1F(Form("hcal_packet_%d_channel_%d",pid, c), Form("Value for %s HCal, sector %d, tower %d; Energy [ADC Counts]; n Events", InnerOuter, sector, tower), 1000, 0, 100000); 
+			TH1F* hnew=new TH1F(Form("hcal_packet_%d_channel_%d",pid, c), Form("Value for %s HCal, sector %d, tower %d; Energy [ADC Counts]; n Events", InnerOuter, sector, tower), 1000, 0, 5000); 
 			//Right now this is hard coded, but I should really use the tower map structure
 			//Implement as a lookup table
-			TH1F* hnew1=new TH1F(Form("hcal_packet_%d_channel_%d_peak",pid, c), Form("Peak Value for %s HCal, sector %d, tower %d; Energy [ADC Counts]; n Events", InnerOuter, sector, tower), 1000, 0, 100000); 
-			TH1F* hnew2=new TH1F(Form("hcal_packet_%d_channel_%d_pedestal",pid, c), Form("Pedestal Value for %s HCal, sector %d, tower %d; Energy [ADC Counts]; n Events", InnerOuter, sector, tower), 1000, 0, 100000); 
+			TH1F* hnew1=new TH1F(Form("hcal_packet_%d_channel_%d_peak",pid, c), Form("Peak Value for %s HCal, sector %d, tower %d; Energy [ADC Counts]; n Events", InnerOuter, sector, tower), 1000, 0, 5000); 
+			TH1F* hnew2=new TH1F(Form("hcal_packet_%d_channel_%d_pedestal",pid, c), Form("Pedestal Value for %s HCal, sector %d, tower %d; Energy [ADC Counts]; n Events", InnerOuter, sector, tower), 1000, 0, 5000); 
 			TH1F* hnew3=new TH1F(Form("hcal_packet_%d_channel_%d_rms",pid, c), Form("Pedestal RMS Value for %s HCal, sector %d, tower %d; Energy [ADC Counts]; n Events", InnerOuter, sector, tower), 1000, 0, 100); 
 			TH1F* hnew4=new TH1F(Form("hcal_packet_%d_channel_%d_peak_location",pid, c), Form("Peak Location for %s HCal, sector %d, tower %d; Time Sample; n Events", InnerOuter, sector, tower), 31, 0, 31); 
 			TH1F* hnew5=new TH1F(Form("hcal_packet_%d_channel_%d_peak_width",pid, c), Form("Peak width for %s HCal, sector %d, tower %d; Time Sample; n Events", InnerOuter, sector, tower), 31, 0, 31); 
@@ -299,22 +298,41 @@ void LEDRunData::ReadInput(){
 }
 
 void LEDRunData::FileOutput(){
-	TFile* f=new TFile(Form("LED_run_data_%s.root", run_number), "REMAKE");
+//	TFile* f =new TFile("dummy.root", "RECREATE");
+	TFile* f;
+	if(_fullform) {
+		f=new TFile(Form("run_data_full/LED_run_data_%d.root", run_number), "RECREATE");
+	}
+	else{
+		f=new TFile(Form("run_data/LED_run_data_%d.root", run_number), "RECREATE");
+	}	
+	std::cout<<"File created" <<std::endl;
 	for(auto a:datahists) for(auto h:a.second) h->Write();
+	std::cout<<"wrote data to file" <<std::endl;
 	f->Close();
 }
 
 void LEDRunData::CalculateChannelData(towerinfo tower){
-	int packet=tower.packet, channel=tower.channel;
+	int packet=tower.packet, channel=tower.channel, sector=tower.sector;
+	int sc=sector%4; 
+	channel=sc*16+channel%16+64*channel/16;
 	auto d=datahists[std::make_pair(packet, channel)];
 	std::map<std::string, float> twr_mean;
-	twr_mean["Value"]=d[0]->GetMean();
-	twr_mean["Peak"]=d[1]->GetMean();
-	twr_mean["Pedestal"]=d[2]->GetMean();
-	twr_mean["Pedestal RMS"]=d[3]->GetMean();
-	twr_mean["Peak Location"]=d[4]->GetMean();
-	twr_mean["Peak Width"]=d[5]->GetMean();
-	tower_datapts[std::make_pair(packet, channel)]=twr_mean;
+	if(d.size() >=6){
+//	std::cout<<"There are " <<d.size()<<" many histograms in the channel data"<<std::endl;
+	try{
+		twr_mean["Value"]=d[0]->GetMean();
+		twr_mean["Peak"]=d[1]->GetMean();
+		twr_mean["Pedestal"]=d[2]->GetMean();
+		twr_mean["Pedestal RMS"]=d[3]->GetMean();
+		twr_mean["Peak Location"]=d[4]->GetMean();
+		twr_mean["Peak Width"]=d[5]->GetMean();
+		if(d[1]->GetMean() != 0) std::cout<<"Got the data, inserting into the tower at " <<packet<<" , " <<channel <<std::endl;
+		tower_datapts[std::make_pair(packet, channel)]=twr_mean;
+	//	for(auto h:d) h->Delete();
+	}
+	catch(std::exception* e){}
+	}
 		
 }
 void LEDRunData::CalculateSectorData(std::vector<towerinfo> sector){
@@ -339,3 +357,4 @@ void LEDRunData::CalculateSectorData(std::vector<towerinfo> sector){
 void LEDRunData::CalculateMPODData(int InnerOuter, int MPODBoard){
 	int a;
 } //Not yet on this, will work on after first data
+

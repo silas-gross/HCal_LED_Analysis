@@ -1,5 +1,5 @@
 Universe 	= vanilla
-Executable 	= /gpfs/mnt/gpfs02/sphenix/user/sgross/HCal_LED_Analysis/CompareLEDs.sh
+Executable 	= /gpfs/mnt/gpfs02/sphenix/user/sgross/HCal_LED_Analysis/CompareLEDs_fullprocess.sh
 Arguments       = 
 Output  	= /gpfs/mnt/gpfs02/sphenix/user/sgross/HCal_LED_Analysis/condor.out
 Error 		=/gpfs/mnt/gpfs02/sphenix/user/sgross/HCal_LED_Analysis/condor.err

@@ -45,29 +45,35 @@ class LEDRunData: public SubsysReco
 			std::string label;	//label for tower to quick parse
 			};
 		
-		 static int run_number=1; 
-		 static std::string runfiles="run_21951.txt";
-		 static int date=19072023; 
-		 static std::vector<float> data_points;
-		 static std::map < std::pair< int, int > , std::map<std::string, float> > tower_datapts;  
-		 static std::map < std::pair< bool, int> , std::vector<float> > sector_datapts;
-		 static std::map < std::pair< int, int > , towerinfo > towermaps; //look up table for towers
-		 static std::map < std::pair< int, int > , std::vector< TH1F* > > datahists;
-		 static std::vector < int > packets; 
-		 static bool _fullform=true;
+		  int run_number=1; 
+		  std::string runfiles="run_21951.txt";
+		  int date=19072023; 
+		  std::vector<float> data_points;
+		  std::map < std::pair< int, int > , std::map<std::string, float> > tower_datapts;  
+		  std::map < std::pair< bool, int> , std::vector<float> > sector_datapts;
+		  std::map < std::pair< int, int > , towerinfo > towermaps; //look up table for towers
+		  std::map < std::pair< int, int > , std::vector< TH1F* > > datahists;
+		  std::vector < int > packets; 
+		  bool _fullform=true;
 	// methods to run
 		LEDRunData(std::string filename, bool pr){ 
 			runfiles=filename;
 			for(int i=0; i<16; i++){ packets.push_back(i+7001+int(i/8)*1000);}
 			_fullform=pr;
 		};
-		LEDRunData(std::map<std::pair<int, int>, towerinfo> towermap, std::string filename, bool pr){
+		LEDRunData(std::map<std::pair<int, int>, towerinfo> towermap, std::string filename, bool pr, int rn){
 			towermaps=towermap; 
 			runfiles=filename;
 			_fullform=pr;
-			for(int i=0; i<16; i++) packets.push_back(i+7001+int(i/8)*1000);
+			for(int i=0; i<16; i++) packets.push_back(i%8+7001+int(i/8)*1000);
+			run_number=rn;
 		};
-		~LEDRunData(){};	
+		~LEDRunData(){
+			towermaps.clear();
+			tower_datapts.clear();
+			sector_datapts.clear();
+			datahists.clear();
+			};	
 		int process_event (PHCompositeNode *topNode) override; 
 	        void CalculateChannelData(towerinfo tower);
 		void CalculateSectorData(std::vector<towerinfo> sector);

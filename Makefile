@@ -30,8 +30,8 @@ $(PACKAGE).o : $(PACKAGE).cc  $(ADDITIONAL_SOURCES) $(LINKFILE)
 $(PACKAGE)_dict.C : $(HDRFILES) $(LINKFILE)
 	rootcint -f $@  -c $(RCFLAGS) $^
 
-#GetLEDData.o: $(ADDITIONAL_SOURCES) $(CXX) 
-#	 $(CXXFLAGS) -o $@ -shared $< $(LDFLAGS) $(ADDITIONAL_LIBS)
+GetLEDData.so: $(ADDITIONAL_SOURCES) $(CXX) 
+	 $(CXXFLAGS) -o $@ -shared $< $(LDFLAGS) $(ADDITIONAL_LIBS)
 
 .PHONY: clean
 

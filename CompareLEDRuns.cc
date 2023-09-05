@@ -218,10 +218,10 @@ TGraph2D* slope_TGraph_2D(const std::vector<std::vector<float>>& slopes){
 }
 
 
-void RunForEach(std::string fname, std::vector <TH1F*> * histos, bool beam)
+void RunForEach(std::string fname, std::vector <TH1F*> * histos, bool beam, int run, bool process_full)
 {
-	bool process_full=true; //does the full waveform processing, turn to false to run faster
-	LEDRunData* data=new LEDRunData(towermaper, fname, process_full);
+ //does the full waveform processing, turn to false to run faster
+	LEDRunData* data=new LEDRunData(towermaper, fname, process_full, run);
 	data->ReadInput();
 	Fun4AllServer *se =Fun4AllServer::instance();
 	se->Verbosity(0);
@@ -232,9 +232,17 @@ void RunForEach(std::string fname, std::vector <TH1F*> * histos, bool beam)
 	se->run();
 	data->FileOutput();
        	std::map<int, std::vector<LEDRunData::towerinfo>> sector_towers;
+//	std::cout<<"there are " <<histos->size() <<"many histograms available" <<std::endl;
 	for(auto t:data->towermaps){
-	       	data->CalculateChannelData(t.second); 
-		sector_towers[t.second.sector].push_back(t.second); 
+	//	std::cout<<"working on packet " <<t.first.first <<" channel " <<t.first.second<<std::endl;
+		data->CalculateChannelData(t.second); 
+		if (data->tower_datapts[t.first]["Peak"] ==0){
+		//	std::cout<<"No data in packet " <<t.first.first <<" channel " <<t.first.second <<std::endl;
+			continue;
+		}
+		else std::cout<<"Data in " <<t.first.first <<" channel " <<t.first.second <<std::endl;
+	//	std::cout<<"Have finished getting the channel data"<<std::endl;
+		//sector_towers[t.second.sector].push_back(t.second); 
 		if (beam){
 			 histos->at(1)->Fill(data->tower_datapts[t.first]["Peak"]);
 			 histos->at(3)->Fill(data->tower_datapts[t.first]["Peak Width"]);
@@ -246,20 +254,24 @@ void RunForEach(std::string fname, std::vector <TH1F*> * histos, bool beam)
 			 histos->at(4)->Fill(data->tower_datapts[t.first]["Pedestal RMS"]);
 		    }
 	}
-	for( auto s:sector_towers) data->CalculateSectorData(s.second);
+	/*for( auto s:sector_towers) data->CalculateSectorData(s.second);
 	auto sectordata=data->sector_datapts;
 	for( auto s:sectordata){
 		if (beam) histos->at(7)->SetBinContent(int(s.first.first)*32+s.first.second+1, s.second.at(1));
 		else histos->at(6)->SetBinContent(int(s.first.first)*32+s.first.second+1, s.second.at(1));
-	}
-	data->FileOutput();
+	}*/
+	std::cout<<"Have finished processing run " <<fname <<std::endl;
+	//for(auto d:data->datahists) for(auto h:d) h->Delete();
+	
 }
 
 void BuildTowerMap()
 {
 	for(int i=0; i<32; i++)
 	{
-		int packet=i/4+1;
+		int packetb=i/4+1;
+		int packet=packetb;
+		std::cout<<"Packet " <<packet <<std::endl;
 		for(int j=0; j<48; j++)
 		{
 			int chn=(i%4)*48+j; 
@@ -281,21 +293,25 @@ void BuildTowerMap()
 				if(k==0){
 					label=("Inner HCal sector %i, Channel %i", i, chn);
 				       	inout=true;
-					packet=7000+packet;
+					packet=7000+packetb;
 				}
 				else{
 					label=("outer HCal sector %i, Channel %i", i, chn);
 				       	inout=false;//I can try to make new methods
-				       	packet=8000+packet;	
+				       	packet=8000+packetb;	
 				}
 				LEDRunData::towerinfo tower { inout, ns, i, j/2, packet, etabin, phibin, eta, phi, label }; 
 				towermaper[std::make_pair(packet, chn)]=tower; 
+				std::cout<<"Packet " <<packet <<std::endl;
 			}	
 		}
 	}
 }
 
-int main(){
+int main(int argc, const char* argv[]){
+    bool full;
+    if( argv[1]=="fast") full=false;
+    else full=true;
     //--------------------------histograms
     //-----------------parse csv
     std::ifstream file("runs_and_time.csv");//specify csv file with format (expected):Date, Run Number, Post-Beam (Y/N) 
@@ -303,7 +319,18 @@ int main(){
     std::string cell;
     std::vector<std::string> row; // make a vector of strings called "row"
     BuildTowerMap();
+    std::vector<int> packets;
+    for(auto t:towermaper){
+		if(packets.size()==0) packets.push_back(t.first.first);
+		else{
+			bool unique=true;
+			for(auto p:packets) if(t.first.first==p) unique=false;
+			if(unique) packets.push_back(t.first.first);
+		}
+	}
     std::cout<<"Built tower map"<<std::endl;
+    std::cout<<"have packet numbers: " <<std::endl;
+    for(auto p:packets) std::cout<<p<<std::endl;
     std::vector<DateRunBeam> Run_info;// remember vector.push_back({el1,el2,el3});
     //this struct is {string, int, bool}
     //-------------------------open file
@@ -355,30 +382,31 @@ int main(){
     //-------------------------------------------------------------------
     //1d histograms
     std::cout<<"Processed all files" <<std::endl;
-    TH1F* NoBeamPeak=new TH1F("NBP", "LED Peak Height, before Beam; Energy Per Tower [ADC Counts]; N_counts", 100, 0, 2500);
-    TH1F* BeamPeak=new TH1F("BP", "LED Peak Height, after Beam; Energy Per Tower [ADC Counts]; N_counts", 100, 0, 2500);
-    TH1F* NoBeamPeakWidth=new TH1F("NBPW", "LED Peak Width, before Beam; Energy Per Tower [ADC Counts]; N_counts", 100, 0, 2500);
-    TH1F* BeamPeakWidth=new TH1F("BPW", "LED Peak Width, after Beam; Energy Per Tower [ADC Counts]; N_counts", 100, 0, 2500);
-    TH1F* NoBeamPedestalRMS=new TH1F("NBPRMS", "LED Pedestal RMS, before Beam; Energy Per Tower [ADC Counts]; N_counts", 100, 0, 2500);
-    TH1F* BeamPedestalRMS=new TH1F("BPW", "LED Pedestal Width, after Beam; Energy Per Tower [ADC Counts]; N_counts", 100, 0, 2500);
+    TH1F* NoBeamPeak=new TH1F("NBP", "LED Peak Height, before Beam; Energy Per Tower [ADC Counts]; N_counts", 200, 0, 4000);
+    TH1F* BeamPeak=new TH1F("BP", "LED Peak Height, after Beam; Energy Per Tower [ADC Counts]; N_counts", 200, 0, 4000);
+    TH1F* NoBeamPeakWidth=new TH1F("NBPW", "LED Peak Width, before Beam; Samples; N_counts", 31, 0, 31);
+    TH1F* BeamPeakWidth=new TH1F("BPW", "LED Peak Width, after Beam; Samples; N_counts", 31, 0, 31);
+    TH1F* NoBeamPedestalRMS=new TH1F("NBPRMS", "LED Pedestal RMS, before Beam; Energy Per Tower [ADC Counts]; N_counts", 100, 0, 25);
+    TH1F* BeamPedestalRMS=new TH1F("BPRMS", "LED Pedestal RMS, after Beam; Energy per Tower [ADC Counts]; N_counts", 100, 0, 25);
     TH1F* SectorNBPeaks=new TH1F("SNBP", "LED Peak rms before beam in sector; Sector Number; Energy [ADC Counts]", 64, 0, 64);
-    TH1F* SectorBPeaks=new TH1F("SNBP", "LED Peak rms after beam in sector; Sector Number; Energy [ADC Counts]", 64, 0, 64);
-    std::vector<TH1F*> datahists {NoBeamPeak, BeamPeak, NoBeamPeakWidth, BeamPeakWidth, NoBeamPedestalRMS, BeamPedestalRMS, SectorNBPeaks, SectorBPeaks};
+    TH1F* SectorBPeaks=new TH1F("SBP", "LED Peak rms after beam in sector; Sector Number; Energy [ADC Counts]", 64, 0, 64);
+    std::vector<TH1F*> acc_data {NoBeamPeak, BeamPeak, NoBeamPeakWidth, BeamPeakWidth, NoBeamPedestalRMS, BeamPedestalRMS, SectorNBPeaks, SectorBPeaks};
    std::cout <<"Booked histos"<<std::endl;
    std::cout<<"nRuns " <<Run_info.size() <<std::endl;
     // Pull data from the GetLEDData class 
     try{
 	for(auto run:Run_info){
-		 RunForEach(run.fname, &datahists, run.Beam); 
-		 std::cout<<run.fname<<std::endl;
+		 std::cout<<"Working on run " <<run.fname<<std::endl;
+		 RunForEach(run.fname, &acc_data, run.Beam, std::stoi(run.run_number), full); //want to make this command line for the false in a few 
 		}
 	}
    catch(std::exception& e) {}
    file.close();
-    TFile* runfile=new TFile("LEDdata_all.root", "RECREATE");
-    for(auto h:datahists) h->Write();
+    std::string runfilename="LEDdata_all_"+std::string(argv[1])+".root";
+    TFile* runfile=new TFile(runfilename.c_str(), "RECREATE");
+    for(auto h:acc_data) h->Write();
     runfile->Close();
-    const char* ohcalhistname="h_peak_ohcal";
+   /* const char* ohcalhistname="h_peak_ohcal";
     const char* ihcalhistname="h_peak_ihcal";
     std::vector<TGraph*> gauss_Peak_graphs_ohcal = CreateTGraphVector(Run_info, ohcalhistname);//create a vector of tgraphs for sigma, mean, amp
     std::vector<TGraph*> gauss_Peak_graphs_ihcal = CreateTGraphVector(Run_info, ihcalhistname);
@@ -443,7 +471,7 @@ int main(){
             TH2F *h_2D_peak_ihcal;
         }
     }
-    */
+    
     TGraph2D *pedestal_ohcal_graph2D = slope_TGraph_2D(pedestal_ohcal_slopes_2D);
     TGraph2D *pedestal_ihcal_graph2D = slope_TGraph_2D(pedestal_ihcal_slopes_2D);
     TGraph2D *pederms_ohcal_graph2D = slope_TGraph_2D(pederms_ohcal_slopes_2D);
@@ -462,7 +490,7 @@ int main(){
     for (size_t i = 0; i < myGraphs.size(); ++i) {
         canvas->cd(i+1); // Activate the canvas
         CreateTGraphVector[i]->Draw((i == 0) ? "APL" : "PL"); // Use "APL" for the first graph, "PL" for the rest
-    }*/
+    }
 
 
     //-------------------------------------------
@@ -608,7 +636,8 @@ int main(){
     delete c1;
     delete c2;
     delete ohcalhistname;
-    delete ihcalhistname;
+    delete ihcalhistname; 
+*/
     return 1;
 }
 
