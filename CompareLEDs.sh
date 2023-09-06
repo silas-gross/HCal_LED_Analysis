@@ -1,7 +1,7 @@
 #! /bin/bash
 
 #Run analysis over a set of runs, taken from csv file
-source /cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/opt/sphenix/core/bin/sphenix_setup.sh -n ana
+source /cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/opt/sphenix/core/bin/sphenix_setup.sh -n 
 ./CompareLEDRuns "fast"
 #runs=$( more $1 | cut -d "," -f2 )
 #declare -a runnumbers 

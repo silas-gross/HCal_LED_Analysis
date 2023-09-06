@@ -221,15 +221,24 @@ TGraph2D* slope_TGraph_2D(const std::vector<std::vector<float>>& slopes){
 void RunForEach(std::string fname, std::vector <TH1F*> * histos, bool beam, int run, bool process_full)
 {
  //does the full waveform processing, turn to false to run faster
+	std::fstream dummy(fname);
+	if(! dummy.is_open()) return;
+	else dummy.close();
 	LEDRunData* data=new LEDRunData(towermaper, fname, process_full, run);
+	std::cout<<"Run " <<run <<" with beam status " <<beam<<std::endl;
 	data->ReadInput();
 	Fun4AllServer *se =Fun4AllServer::instance();
 	se->Verbosity(0);
-	Fun4AllPrdfInputPoolManager *in= new Fun4AllPrdfInputPoolManager("in");
+	std::string inputname("in_run_%d", run);
+	Fun4AllPrdfInputPoolManager *in= new Fun4AllPrdfInputPoolManager(inputname);
+	try{ 
 	in->AddPrdfInputList(fname)->MakeReference(true);
 	se->registerInputManager(in);
 	se->registerSubsystem(data);
 	se->run();
+	}
+	catch (std::exception& e) {return;}
+
 	data->FileOutput();
        	std::map<int, std::vector<LEDRunData::towerinfo>> sector_towers;
 //	std::cout<<"there are " <<histos->size() <<"many histograms available" <<std::endl;
@@ -240,15 +249,16 @@ void RunForEach(std::string fname, std::vector <TH1F*> * histos, bool beam, int 
 		//	std::cout<<"No data in packet " <<t.first.first <<" channel " <<t.first.second <<std::endl;
 			continue;
 		}
-		else std::cout<<"Data in " <<t.first.first <<" channel " <<t.first.second <<std::endl;
+		//else std::cout<<"Data in " <<t.first.first <<" channel " <<t.first.second <<std::endl;
 	//	std::cout<<"Have finished getting the channel data"<<std::endl;
 		//sector_towers[t.second.sector].push_back(t.second); 
 		if (beam){
+			 std::cout<<"Have found the beam" <<std::endl;
 			 histos->at(1)->Fill(data->tower_datapts[t.first]["Peak"]);
 			 histos->at(3)->Fill(data->tower_datapts[t.first]["Peak Width"]);
 			 histos->at(5)->Fill(data->tower_datapts[t.first]["Pedestal RMS"]);
 		}
-		else{
+		else{ 
 			 histos->at(0)->Fill(data->tower_datapts[t.first]["Peak"]);
 			 histos->at(2)->Fill(data->tower_datapts[t.first]["Peak Width"]);
 			 histos->at(4)->Fill(data->tower_datapts[t.first]["Pedestal RMS"]);
@@ -262,7 +272,11 @@ void RunForEach(std::string fname, std::vector <TH1F*> * histos, bool beam, int 
 	}*/
 	std::cout<<"Have finished processing run " <<fname <<std::endl;
 	//for(auto d:data->datahists) for(auto h:d) h->Delete();
-	
+//	in->ResetFileList();
+	se->Reset();
+	delete data; 
+//	delete in;
+	//delete se;
 }
 
 void BuildTowerMap()
@@ -271,7 +285,6 @@ void BuildTowerMap()
 	{
 		int packetb=i/4+1;
 		int packet=packetb;
-		std::cout<<"Packet " <<packet <<std::endl;
 		for(int j=0; j<48; j++)
 		{
 			int chn=(i%4)*48+j; 
@@ -302,16 +315,19 @@ void BuildTowerMap()
 				}
 				LEDRunData::towerinfo tower { inout, ns, i, j/2, packet, etabin, phibin, eta, phi, label }; 
 				towermaper[std::make_pair(packet, chn)]=tower; 
-				std::cout<<"Packet " <<packet <<std::endl;
+//				std::cout<<"Packet " <<packet <<std::endl;
 			}	
 		}
 	}
 }
 
 int main(int argc, const char* argv[]){
-    bool full;
-    if( argv[1]=="fast") full=false;
-    else full=true;
+    bool full=false;
+    std::string mode (argv[1]);
+    if( mode.find("full") != std::string::npos) full=true;
+    else full=false;
+    std::cout <<"Passed argument is " <<argv[1]<<std::endl;
+    std::cout << "Running with the full waveform fitting method :" << full <<std::endl;
     //--------------------------histograms
     //-----------------parse csv
     std::ifstream file("runs_and_time.csv");//specify csv file with format (expected):Date, Run Number, Post-Beam (Y/N) 
@@ -346,7 +362,6 @@ int main(int argc, const char* argv[]){
 	row.clear();
 	while (std::getline(iss, cell, ',')){ //read "iss" stringstream using comma as the delimiter and store the value in the string "cell"
             row.push_back(cell); //store each "cell" in the vector "row"
-	    std::cout<<cell<<std::endl; 
         }
         // Process the row data as needed
         // Print the elements of each row:      
@@ -370,7 +385,6 @@ int main(int argc, const char* argv[]){
         		//return 1;
         	}
         	Run_info.push_back({row[0], row[1], Beam_On});
-		std::cout<<"Pushing back"<<std::endl;
 	}
 	catch(std::exception& e)
 	{
@@ -396,13 +410,13 @@ int main(int argc, const char* argv[]){
     // Pull data from the GetLEDData class 
     try{
 	for(auto run:Run_info){
-		 std::cout<<"Working on run " <<run.fname<<std::endl;
+		 std::cout<<"Working on run " <<run.fname<<"with beam status " <<run.Beam <<std::endl;
 		 RunForEach(run.fname, &acc_data, run.Beam, std::stoi(run.run_number), full); //want to make this command line for the false in a few 
 		}
 	}
    catch(std::exception& e) {}
    file.close();
-    std::string runfilename="LEDdata_all_"+std::string(argv[1])+".root";
+    std::string runfilename="LEDdata_all_"+mode+".root";
     TFile* runfile=new TFile(runfilename.c_str(), "RECREATE");
     for(auto h:acc_data) h->Write();
     runfile->Close();
