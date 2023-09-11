@@ -69,7 +69,7 @@ class LEDRunData: public SubsysReco
 			run_number=rn;
 		};
 		~LEDRunData(){
-			towermaps.clear();
+//			towermaps.clear();
 			tower_datapts.clear();
 			sector_datapts.clear();
 			datahists.clear();

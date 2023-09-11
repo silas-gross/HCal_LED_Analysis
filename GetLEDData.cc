@@ -304,8 +304,9 @@ void LEDRunData::FileOutput(){
 		f=new TFile(Form("run_data_full/LED_run_data_%d.root", run_number), "RECREATE");
 	}
 	else{
-		f=new TFile(Form("run_data/LED_run_data_%d.root", run_number), "RECREATE");
+		f=new TFile(Form("run_data_fast/LED_run_data_%d.root", run_number), "RECREATE");
 	}	
+	f->cd();
 	std::cout<<"File created" <<std::endl;
 	for(auto a:datahists) for(auto h:a.second) h->Write();
 	std::cout<<"wrote data to file" <<std::endl;

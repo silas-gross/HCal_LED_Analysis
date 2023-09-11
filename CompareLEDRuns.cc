@@ -8,13 +8,17 @@
 #include <cstring>
 #include <vector>
 #include <map>
+#include <TObject.h>
 #include <TFile.h>
+#include <TDirectoryFile.h>
+#include <TClass.h>
 #include <TString.h>
 #include <TH1.h>
 #include <TH1F.h>//a lot of these maybe not needed.
 #include <TH2F.h>
 #include <TF1.h>
 #include <TF2.h>
+#include <TList.h>
 #include <TCanvas.h>
 #include <TGraph.h>
 #include <TGraph2D.h>
@@ -224,9 +228,9 @@ void RunForEach(std::string fname, std::vector <TH1F*> * histos, bool beam, int 
 	std::fstream dummy(fname);
 	if(! dummy.is_open()) return;
 	else dummy.close();
-	LEDRunData* data=new LEDRunData(towermaper, fname, process_full, run);
+	LEDRunData* leddata=new LEDRunData(towermaper, fname, process_full, run);
 	std::cout<<"Run " <<run <<" with beam status " <<beam<<std::endl;
-	data->ReadInput();
+	leddata->ReadInput();
 	Fun4AllServer *se =Fun4AllServer::instance();
 	se->Verbosity(0);
 	std::string inputname("in_run_%d", run);
@@ -234,36 +238,38 @@ void RunForEach(std::string fname, std::vector <TH1F*> * histos, bool beam, int 
 	try{ 
 	in->AddPrdfInputList(fname)->MakeReference(true);
 	se->registerInputManager(in);
-	se->registerSubsystem(data);
+	se->registerSubsystem(leddata);
 	se->run();
 	}
 	catch (std::exception& e) {return;}
 
-	data->FileOutput();
+	//leddata->FileOutput();
        	std::map<int, std::vector<LEDRunData::towerinfo>> sector_towers;
-//	std::cout<<"there are " <<histos->size() <<"many histograms available" <<std::endl;
-	for(auto t:data->towermaps){
+	std::cout<<"there are " <<towermaper.size() <<"many channels in play" <<std::endl;
+	for(auto t:leddata->towermaps){
 	//	std::cout<<"working on packet " <<t.first.first <<" channel " <<t.first.second<<std::endl;
-		data->CalculateChannelData(t.second); 
-		if (data->tower_datapts[t.first]["Peak"] ==0){
-		//	std::cout<<"No data in packet " <<t.first.first <<" channel " <<t.first.second <<std::endl;
+		leddata->CalculateChannelData(t.second); 
+		if (leddata->tower_datapts[t.first]["Peak"] == 0){
+	//		std::cout<<"No data in packet " <<t.first.first <<" channel " <<t.first.second <<std::endl;
 			continue;
 		}
 		//else std::cout<<"Data in " <<t.first.first <<" channel " <<t.first.second <<std::endl;
 	//	std::cout<<"Have finished getting the channel data"<<std::endl;
 		//sector_towers[t.second.sector].push_back(t.second); 
 		if (beam){
-			 std::cout<<"Have found the beam" <<std::endl;
-			 histos->at(1)->Fill(data->tower_datapts[t.first]["Peak"]);
-			 histos->at(3)->Fill(data->tower_datapts[t.first]["Peak Width"]);
-			 histos->at(5)->Fill(data->tower_datapts[t.first]["Pedestal RMS"]);
+	//		 std::cout<<"Have found the beam" <<std::endl;
+			 histos->at(1)->Fill(leddata->tower_datapts[t.first]["Peak"]);
+			 histos->at(3)->Fill(leddata->tower_datapts[t.first]["Peak Width"]);
+			 histos->at(5)->Fill(leddata->tower_datapts[t.first]["Pedestal RMS"]);
 		}
 		else{ 
-			 histos->at(0)->Fill(data->tower_datapts[t.first]["Peak"]);
-			 histos->at(2)->Fill(data->tower_datapts[t.first]["Peak Width"]);
-			 histos->at(4)->Fill(data->tower_datapts[t.first]["Pedestal RMS"]);
+	//		 std::cout<<"No beam" <<std::endl;
+			 histos->at(0)->Fill(leddata->tower_datapts[t.first]["Peak"]);
+			 histos->at(2)->Fill(leddata->tower_datapts[t.first]["Peak Width"]);
+			 histos->at(4)->Fill(leddata->tower_datapts[t.first]["Pedestal RMS"]);
 		    }
 	}
+        leddata->FileOutput();
 	/*for( auto s:sector_towers) data->CalculateSectorData(s.second);
 	auto sectordata=data->sector_datapts;
 	for( auto s:sectordata){
@@ -274,7 +280,7 @@ void RunForEach(std::string fname, std::vector <TH1F*> * histos, bool beam, int 
 	//for(auto d:data->datahists) for(auto h:d) h->Delete();
 //	in->ResetFileList();
 	se->Reset();
-	delete data; 
+	delete leddata; 
 //	delete in;
 	//delete se;
 }
@@ -328,9 +334,14 @@ int main(int argc, const char* argv[]){
     else full=false;
     std::cout <<"Passed argument is " <<argv[1]<<std::endl;
     std::cout << "Running with the full waveform fitting method :" << full <<std::endl;
+    int run=std::stoi(argv[2]);
+    bool Beam=false;
+    if ( std::string(argv[3]).find("Y") != std::string::npos) Beam=true;
+    std::string date (argv[4]);
+    BuildTowerMap();
     //--------------------------histograms
     //-----------------parse csv
-    std::ifstream file("runs_and_time.csv");//specify csv file with format (expected):Date, Run Number, Post-Beam (Y/N) 
+   /* std::ifstream file("runs_and_time.csv");//specify csv file with format (expected):Date, Run Number, Post-Beam (Y/N) 
     std::string line;
     std::string cell;
     std::vector<std::string> row; // make a vector of strings called "row"
@@ -391,35 +402,51 @@ int main(int argc, const char* argv[]){
 		std::cout<<"offending line has exception  " <<Run_info.size() <<std::endl;
 	}
         //move on to next row/line (each specific led run)
-    }
+    }*/
     //create graphs to characterize data
     //-------------------------------------------------------------------
     //1d histograms
     std::cout<<"Processed all files" <<std::endl;
-    TH1F* NoBeamPeak=new TH1F("NBP", "LED Peak Height, before Beam; Energy Per Tower [ADC Counts]; N_counts", 200, 0, 4000);
-    TH1F* BeamPeak=new TH1F("BP", "LED Peak Height, after Beam; Energy Per Tower [ADC Counts]; N_counts", 200, 0, 4000);
-    TH1F* NoBeamPeakWidth=new TH1F("NBPW", "LED Peak Width, before Beam; Samples; N_counts", 31, 0, 31);
-    TH1F* BeamPeakWidth=new TH1F("BPW", "LED Peak Width, after Beam; Samples; N_counts", 31, 0, 31);
-    TH1F* NoBeamPedestalRMS=new TH1F("NBPRMS", "LED Pedestal RMS, before Beam; Energy Per Tower [ADC Counts]; N_counts", 100, 0, 25);
-    TH1F* BeamPedestalRMS=new TH1F("BPRMS", "LED Pedestal RMS, after Beam; Energy per Tower [ADC Counts]; N_counts", 100, 0, 25);
-    TH1F* SectorNBPeaks=new TH1F("SNBP", "LED Peak rms before beam in sector; Sector Number; Energy [ADC Counts]", 64, 0, 64);
-    TH1F* SectorBPeaks=new TH1F("SBP", "LED Peak rms after beam in sector; Sector Number; Energy [ADC Counts]", 64, 0, 64);
+    std::string runfilename="run_data_"+mode+"/avgs/LEDdata_"+std::to_string(run)+"_"+mode+".root";
+    //TFile* runfile;
+    //runfile->Open(runfilename.c_str(), "RECREATE");
+    //TList* l=(TList *) runfile->GetListOfKeys();
+    //l->Print();
+    TH1F *NoBeamPeak, *BeamPeak, *NoBeamPeakWidth, *BeamPeakWidth, *NoBeamPedestalRMS, *BeamPedestalRMS;
+    TH1F *SectorNBPeaks, *SectorBPeaks;
+    std::cout<<"Searching for the hists" <<std::endl;
+    
+    NoBeamPeak=new TH1F("NBP", "LED Peak Height, before Beam; Energy Per Tower [ADC Counts]; N_counts", 200, 0, 4000);
+    BeamPeak=new TH1F("BP", "LED Peak Height, after Beam; Energy Per Tower [ADC Counts]; N_counts", 200, 0, 4000);
+    NoBeamPeakWidth=new TH1F("NBPW", "LED Peak Width, before Beam; Samples; N_counts", 31, 0, 31);
+    BeamPeakWidth=new TH1F("BPW", "LED Peak Width, after Beam; Samples; N_counts", 31, 0, 31);
+    NoBeamPedestalRMS=new TH1F("NBPRMS", "LED Pedestal RMS, before Beam; Energy Per Tower [ADC Counts]; N_counts", 100, 0, 25);
+    BeamPedestalRMS=new TH1F("BPRMS", "LED Pedestal RMS, after Beam; Energy per Tower [ADC Counts]; N_counts", 100, 0, 25);
+    SectorNBPeaks=new TH1F("SNBP", "LED Peak rms before beam in sector; Sector Number; Energy [ADC Counts]", 64, 0, 64);
+    SectorBPeaks=new TH1F("SBP", "LED Peak rms after beam in sector; Sector Number; Energy [ADC Counts]", 64, 0, 64);
+
     std::vector<TH1F*> acc_data {NoBeamPeak, BeamPeak, NoBeamPeakWidth, BeamPeakWidth, NoBeamPedestalRMS, BeamPedestalRMS, SectorNBPeaks, SectorBPeaks};
    std::cout <<"Booked histos"<<std::endl;
-   std::cout<<"nRuns " <<Run_info.size() <<std::endl;
+  // std::cout<<"nRuns " <<Run_info.size() <<std::endl;
+   DateRunBeam Run_info {date,std::to_string(run), Beam};
     // Pull data from the GetLEDData class 
-    try{
-	for(auto run:Run_info){
-		 std::cout<<"Working on run " <<run.fname<<"with beam status " <<run.Beam <<std::endl;
-		 RunForEach(run.fname, &acc_data, run.Beam, std::stoi(run.run_number), full); //want to make this command line for the false in a few 
-		}
+   try{
+	//for(auto run:Run_info){
+		 std::cout<<"Working on run " <<Run_info.fname<<" with beam status " <<Run_info.Beam <<std::endl;
+		 RunForEach(Run_info.fname, &acc_data, Run_info.Beam, run, full); //want to make this command line for the false in a few 
+		
 	}
    catch(std::exception& e) {}
-   file.close();
-    std::string runfilename="LEDdata_all_"+mode+".root";
-    TFile* runfile=new TFile(runfilename.c_str(), "RECREATE");
-    for(auto h:acc_data) h->Write();
+//   file.close();
+    
+   TFile* runfile =new TFile(runfilename.c_str(), "RECREATE");
+   runfile->cd();
+   for(auto h:acc_data) h->Write();
+   std::cout<<"Now trying to interact with the file itself"<<std::endl;
+    runfile->Write();
+   std::cout<<"Wrote histograms to the file" <<std::endl;
     runfile->Close();
+    std::cout<<"Closed the file" <<std::endl;
    /* const char* ohcalhistname="h_peak_ohcal";
     const char* ihcalhistname="h_peak_ihcal";
     std::vector<TGraph*> gauss_Peak_graphs_ohcal = CreateTGraphVector(Run_info, ohcalhistname);//create a vector of tgraphs for sigma, mean, amp
@@ -652,6 +679,7 @@ int main(int argc, const char* argv[]){
     delete ohcalhistname;
     delete ihcalhistname; 
 */
-    return 1;
+    std::cout<<"End of File" <<std::endl;
+    return 0;
 }
 
