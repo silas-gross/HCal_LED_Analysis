@@ -1,1 +1,73 @@
 Error in <TSystem::ExpandFileName>: input: $HOME/.root.mimes, output: $HOME/.root.mimes
+Error in <TSystem::ExpandFileName>: input: $HOME/.root.mimes, output: $HOME/.root.mimes
+Error in <TSystem::ExpandFileName>: input: $HOME/.root.mimes, output: $HOME/.root.mimes
+Error in <TSystem::ExpandFileName>: input: $HOME/.root.mimes, output: $HOME/.root.mimes
+Error in <TSystem::ExpandFileName>: input: $HOME/.root.mimes, output: $HOME/.root.mimes
+Error in <TSystem::ExpandFileName>: input: $HOME/.root.mimes, output: $HOME/.root.mimes
+Error in <TSystem::ExpandFileName>: input: $HOME/.root.mimes, output: $HOME/.root.mimes
+Error in <TSystem::ExpandFileName>: input: $HOME/.root.mimes, output: $HOME/.root.mimes
+Error in <TSystem::ExpandFileName>: input: $HOME/.root.mimes, output: $HOME/.root.mimes
+Error in <TSystem::ExpandFileName>: input: $HOME/.root.mimes, output: $HOME/.root.mimes
+Error in <TSystem::ExpandFileName>: input: $HOME/.root.mimes, output: $HOME/.root.mimes
+Error in <TSystem::ExpandFileName>: input: $HOME/.root.mimes, output: $HOME/.root.mimes
+Error in <TSystem::ExpandFileName>: input: $HOME/.root.mimes, output: $HOME/.root.mimes
+Error in <TSystem::ExpandFileName>: input: $HOME/.root.mimes, output: $HOME/.root.mimes
+Error in <TSystem::ExpandFileName>: input: $HOME/.root.mimes, output: $HOME/.root.mimes
+Error in <TSystem::ExpandFileName>: input: $HOME/.root.mimes, output: $HOME/.root.mimes
+Error in <TSystem::ExpandFileName>: input: $HOME/.root.mimes, output: $HOME/.root.mimes
+Error in <TSystem::ExpandFileName>: input: $HOME/.root.mimes, output: $HOME/.root.mimes
+Error in <TSystem::ExpandFileName>: input: $HOME/.root.mimes, output: $HOME/.root.mimes
+Error in <TSystem::ExpandFileName>: input: $HOME/.root.mimes, output: $HOME/.root.mimes
+Error in <TSystem::ExpandFileName>: input: $HOME/.root.mimes, output: $HOME/.root.mimes
+Error in <TSystem::ExpandFileName>: input: $HOME/.root.mimes, output: $HOME/.root.mimes
+Error in <TSystem::ExpandFileName>: input: $HOME/.root.mimes, output: $HOME/.root.mimes
+Error in <TSystem::ExpandFileName>: input: $HOME/.root.mimes, output: $HOME/.root.mimes
+Error in <TSystem::ExpandFileName>: input: $HOME/.root.mimes, output: $HOME/.root.mimes
+Error in <TSystem::ExpandFileName>: input: $HOME/.root.mimes, output: $HOME/.root.mimes
+SysError in <TFile::TFile>: file /gpfs/mnt/gpfs02/sphenix/user/sgross/HCal_LED_Analysis/run_data_full/avgs/LEDdata_24058_full.root can not be opened No such file or directory
+Error in <TFile::WriteTObject>: Directory run_data_full/avgs/LEDdata_24058_full.root is not writable
+Error in <TFile::WriteTObject>: Directory run_data_full/avgs/LEDdata_24058_full.root is not writable
+Error in <TFile::WriteTObject>: Directory run_data_full/avgs/LEDdata_24058_full.root is not writable
+Error in <TFile::WriteTObject>: Directory run_data_full/avgs/LEDdata_24058_full.root is not writable
+Error in <TFile::WriteTObject>: Directory run_data_full/avgs/LEDdata_24058_full.root is not writable
+Error in <TFile::WriteTObject>: Directory run_data_full/avgs/LEDdata_24058_full.root is not writable
+Error in <TFile::WriteTObject>: Directory run_data_full/avgs/LEDdata_24058_full.root is not writable
+Error in <TFile::WriteTObject>: Directory run_data_full/avgs/LEDdata_24058_full.root is not writable
+Warning in <TFile::Write>: file run_data_full/avgs/LEDdata_24058_full.root not opened in write mode
+Error in <TSystem::ExpandFileName>: input: $HOME/.root.mimes, output: $HOME/.root.mimes
+Error in <TSystem::ExpandFileName>: input: $HOME/.root.mimes, output: $HOME/.root.mimes
+Error in <TSystem::ExpandFileName>: input: $HOME/.root.mimes, output: $HOME/.root.mimes
+Error in <TSystem::ExpandFileName>: input: $HOME/.root.mimes, output: $HOME/.root.mimes
+SysError in <TFile::TFile>: file /gpfs/mnt/gpfs02/sphenix/user/sgross/HCal_LED_Analysis/run_data_full/avgs/LEDdata_24059_full.root can not be opened No such file or directory
+Error in <TFile::WriteTObject>: Directory run_data_full/avgs/LEDdata_24059_full.root is not writable
+Error in <TFile::WriteTObject>: Directory run_data_full/avgs/LEDdata_24059_full.root is not writable
+Error in <TFile::WriteTObject>: Directory run_data_full/avgs/LEDdata_24059_full.root is not writable
+Error in <TFile::WriteTObject>: Directory run_data_full/avgs/LEDdata_24059_full.root is not writable
+Error in <TFile::WriteTObject>: Directory run_data_full/avgs/LEDdata_24059_full.root is not writable
+Error in <TFile::WriteTObject>: Directory run_data_full/avgs/LEDdata_24059_full.root is not writable
+Error in <TFile::WriteTObject>: Directory run_data_full/avgs/LEDdata_24059_full.root is not writable
+Error in <TFile::WriteTObject>: Directory run_data_full/avgs/LEDdata_24059_full.root is not writable
+Warning in <TFile::Write>: file run_data_full/avgs/LEDdata_24059_full.root not opened in write mode
+Error in <TSystem::ExpandFileName>: input: $HOME/.root.mimes, output: $HOME/.root.mimes
+Error in <TSystem::ExpandFileName>: input: $HOME/.root.mimes, output: $HOME/.root.mimes
+Error in <TSystem::ExpandFileName>: input: $HOME/.root.mimes, output: $HOME/.root.mimes
+Error in <TSystem::ExpandFileName>: input: $HOME/.root.mimes, output: $HOME/.root.mimes
+Error in <TSystem::ExpandFileName>: input: $HOME/.root.mimes, output: $HOME/.root.mimes
+Error in <TSystem::ExpandFileName>: input: $HOME/.root.mimes, output: $HOME/.root.mimes
+SysError in <TFile::TFile>: file /gpfs/mnt/gpfs02/sphenix/user/sgross/HCal_LED_Analysis/run_data_full/avgs/LEDdata_24057_full.root can not be opened No such file or directory
+Error in <TFile::WriteTObject>: Directory run_data_full/avgs/LEDdata_24057_full.root is not writable
+Error in <TFile::WriteTObject>: Directory run_data_full/avgs/LEDdata_24057_full.root is not writable
+Error in <TFile::WriteTObject>: Directory run_data_full/avgs/LEDdata_24057_full.root is not writable
+Error in <TFile::WriteTObject>: Directory run_data_full/avgs/LEDdata_24057_full.root is not writable
+Error in <TFile::WriteTObject>: Directory run_data_full/avgs/LEDdata_24057_full.root is not writable
+Error in <TFile::WriteTObject>: Directory run_data_full/avgs/LEDdata_24057_full.root is not writable
+Error in <TFile::WriteTObject>: Directory run_data_full/avgs/LEDdata_24057_full.root is not writable
+Error in <TFile::WriteTObject>: Directory run_data_full/avgs/LEDdata_24057_full.root is not writable
+Warning in <TFile::Write>: file run_data_full/avgs/LEDdata_24057_full.root not opened in write mode
+Error in <TSystem::ExpandFileName>: input: $HOME/.root.mimes, output: $HOME/.root.mimes
+Error in <TSystem::ExpandFileName>: input: $HOME/.root.mimes, output: $HOME/.root.mimes
+terminate called after throwing an instance of 'std::logic_error'
+  what():  basic_string: construction from null is not valid
+/gpfs/mnt/gpfs02/sphenix/user/sgross/HCal_LED_Analysis/CompareLEDs_fullprocess.sh: line 6: 22184 Aborted                 ./CompareLEDRuns "full" $1 $2 $3
+Error in <TSystem::ExpandFileName>: input: $HOME/.root.mimes, output: $HOME/.root.mimes
+Error in <TSystem::ExpandFileName>: input: $HOME/.root.mimes, output: $HOME/.root.mimes

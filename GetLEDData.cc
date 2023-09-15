@@ -325,7 +325,7 @@ void LEDRunData::CalculateChannelData(towerinfo tower){
 		twr_mean["Value"]=d[0]->GetMean();
 		twr_mean["Peak"]=d[1]->GetMean();
 		twr_mean["Pedestal"]=d[2]->GetMean();
-		twr_mean["Pedestal RMS"]=d[3]->GetMean();
+		twr_mean["Pedestal RMS"]=d[2]->GetRMS();
 		twr_mean["Peak Location"]=d[4]->GetMean();
 		twr_mean["Peak Width"]=d[5]->GetMean();
 //		if(d[1]->GetMean() != 0) std::cout<<"Got the data, inserting into the tower at " <<packet<<" , " <<channel <<std::endl;

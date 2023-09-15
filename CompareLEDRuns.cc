@@ -249,7 +249,7 @@ void RunForEach(std::string fname, std::vector <TH1F*> * histos, bool beam, int 
 	for(auto t:leddata->towermaps){
 	//	std::cout<<"working on packet " <<t.first.first <<" channel " <<t.first.second<<std::endl;
 		leddata->CalculateChannelData(t.second); 
-		if (leddata->tower_datapts[t.first]["Peak"] == 0){
+		if (leddata->tower_datapts[t.first].size() == 0){
 	//		std::cout<<"No data in packet " <<t.first.first <<" channel " <<t.first.second <<std::endl;
 			continue;
 		}
@@ -334,6 +334,7 @@ int main(int argc, const char* argv[]){
     else full=false;
     std::cout <<"Passed argument is " <<argv[1]<<std::endl;
     std::cout << "Running with the full waveform fitting method :" << full <<std::endl;
+<<<<<<< HEAD
     int run=std::stoi(argv[2]);
     bool Beam=false;
     if ( std::string(argv[3]).find("Y") != std::string::npos) Beam=true;
@@ -342,9 +343,21 @@ int main(int argc, const char* argv[]){
     //--------------------------histograms
     //-----------------parse csv
    /* std::ifstream file("runs_and_time.csv");//specify csv file with format (expected):Date, Run Number, Post-Beam (Y/N) 
+=======
+    int run_number=1;
+    bool beam=false;
+    try{
+	    run_number=std::stoi(argv[2]);
+	    if(std::string(argv[3]).find("Beam") != std::string::npos) beam=true;
+	}
+    catch(std::exception& e){}
+    //--------------------------histograms
+    //-----------------parse csv
+    /*std::ifstream file("runs_and_time.csv");//specify csv file with format (expected):Date, Run Number, Post-Beam (Y/N) 
+>>>>>>> 453a59405cae2858d0996d0400fb40f81e6fb530
     std::string line;
     std::string cell;
-    std::vector<std::string> row; // make a vector of strings called "row"
+    std::vector<std::string> row; // make a vector of strings called "row" */
     BuildTowerMap();
     std::vector<int> packets;
     for(auto t:towermaper){
@@ -358,11 +371,11 @@ int main(int argc, const char* argv[]){
     std::cout<<"Built tower map"<<std::endl;
     std::cout<<"have packet numbers: " <<std::endl;
     for(auto p:packets) std::cout<<p<<std::endl;
-    std::vector<DateRunBeam> Run_info;// remember vector.push_back({el1,el2,el3});
+//    std::vector<DateRunBeam> Run_info;// remember vector.push_back({el1,el2,el3});
     //this struct is {string, int, bool}
     //-------------------------open file
     //SetsPhenixStyle();
-    if (!file.is_open()){
+  /*  if (!file.is_open()){
         std::cout << "Error opening the file." << std::endl;
         return 1;
     }
@@ -405,7 +418,7 @@ int main(int argc, const char* argv[]){
     }*/
     //create graphs to characterize data
     //-------------------------------------------------------------------
-    //1d histograms
+    //1d histograms*/
     std::cout<<"Processed all files" <<std::endl;
     std::string runfilename="run_data_"+mode+"/avgs/LEDdata_"+std::to_string(run)+"_"+mode+".root";
     //TFile* runfile;
@@ -428,6 +441,7 @@ int main(int argc, const char* argv[]){
     std::vector<TH1F*> acc_data {NoBeamPeak, BeamPeak, NoBeamPeakWidth, BeamPeakWidth, NoBeamPedestalRMS, BeamPedestalRMS, SectorNBPeaks, SectorBPeaks};
    std::cout <<"Booked histos"<<std::endl;
   // std::cout<<"nRuns " <<Run_info.size() <<std::endl;
+<<<<<<< HEAD
    DateRunBeam Run_info {date,std::to_string(run), Beam};
     // Pull data from the GetLEDData class 
    try{
@@ -445,6 +459,20 @@ int main(int argc, const char* argv[]){
    std::cout<<"Now trying to interact with the file itself"<<std::endl;
     runfile->Write();
    std::cout<<"Wrote histograms to the file" <<std::endl;
+=======
+    std::string fname("run_%d.txt", run_number);
+    // Pull data from the GetLEDData class 
+    try{
+		 std::cout<<"Working on run " <<run_number<<"with beam status " <beam <<std::endl;
+		 RunForEach(fname, &acc_data, beam, run_number, full); //want to make this command line for the false in a few 
+		}
+	}
+   catch(std::exception& e) {}
+   file.close();
+    std::string runfilename ("LEDdata_%d_%s.root", run_number, mode);
+    TFile* runfile=new TFile(runfilename.c_str(), "RECREATE");
+    for(auto h:acc_data) h->Write();
+>>>>>>> 453a59405cae2858d0996d0400fb40f81e6fb530
     runfile->Close();
     std::cout<<"Closed the file" <<std::endl;
    /* const char* ohcalhistname="h_peak_ohcal";

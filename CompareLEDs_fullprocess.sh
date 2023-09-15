@@ -1,10 +1,10 @@
 #! /bin/bash
 source /cvmfs/sphenix.sdcc.bnl.gov/gcc-12.1.0/opt/sphenix/core/bin/sphenix_setup.sh -n ana
-while IFS="," read -r date run beam
-do 
+#while IFS="," read -r date run beam
+#do 
 #Run analysis over a set of runs, taken from csv file
-	./CompareLEDRuns "full" $run $beam $date
-done <  <(tail -n +2 runs_and_time.csv)
+	./CompareLEDRuns "full" $1 $2 $3
+#done <  <(tail -n +2 runs_and_time.csv)
 #runs=$( more $1 | cut -d "," -f2 )
 #declare -a runnumbers 
 #readarray -t runnumbers <<< $runs
