@@ -198,6 +198,7 @@ std::vector<float> LEDRunData::getPeak(std::vector<int> chl_data, int pedestal) 
 		}
 	}
 //	std::cout<<"Found peak at sample number " <<pos <<" with height " <<pk <<std::endl;
+	pk+=-pedestal;
 	peak_data.push_back(pk);
 	peak_data.push_back(pos);
 	//now need to do waveform fitting, just going to do a very quick a* search
