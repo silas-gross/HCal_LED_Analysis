@@ -334,7 +334,6 @@ int main(int argc, const char* argv[]){
     else full=false;
     std::cout <<"Passed argument is " <<argv[1]<<std::endl;
     std::cout << "Running with the full waveform fitting method :" << full <<std::endl;
-<<<<<<< HEAD
     int run=std::stoi(argv[2]);
     bool Beam=false;
     if ( std::string(argv[3]).find("Y") != std::string::npos) Beam=true;
@@ -441,7 +440,7 @@ int main(int argc, const char* argv[]){
     std::vector<TH1F*> acc_data {NoBeamPeak, BeamPeak, NoBeamPeakWidth, BeamPeakWidth, NoBeamPedestalRMS, BeamPedestalRMS, SectorNBPeaks, SectorBPeaks};
    std::cout <<"Booked histos"<<std::endl;
   // std::cout<<"nRuns " <<Run_info.size() <<std::endl;
-<<<<<<< HEAD
+
    DateRunBeam Run_info {date,std::to_string(run), Beam};
     // Pull data from the GetLEDData class 
    try{
@@ -459,22 +458,8 @@ int main(int argc, const char* argv[]){
    std::cout<<"Now trying to interact with the file itself"<<std::endl;
     runfile->Write();
    std::cout<<"Wrote histograms to the file" <<std::endl;
-=======
-    std::string fname("run_%d.txt", run_number);
+   runfile->Close();
     // Pull data from the GetLEDData class 
-    try{
-		 std::cout<<"Working on run " <<run_number<<"with beam status " <beam <<std::endl;
-		 RunForEach(fname, &acc_data, beam, run_number, full); //want to make this command line for the false in a few 
-		}
-	}
-   catch(std::exception& e) {}
-   file.close();
-    std::string runfilename ("LEDdata_%d_%s.root", run_number, mode);
-    TFile* runfile=new TFile(runfilename.c_str(), "RECREATE");
-    for(auto h:acc_data) h->Write();
->>>>>>> 453a59405cae2858d0996d0400fb40f81e6fb530
-    runfile->Close();
-    std::cout<<"Closed the file" <<std::endl;
    /* const char* ohcalhistname="h_peak_ohcal";
     const char* ihcalhistname="h_peak_ihcal";
     std::vector<TGraph*> gauss_Peak_graphs_ohcal = CreateTGraphVector(Run_info, ohcalhistname);//create a vector of tgraphs for sigma, mean, amp
