@@ -338,7 +338,6 @@ int main(int argc, const char* argv[]){
     bool Beam=false;
     if ( std::string(argv[3]).find("Y") != std::string::npos) Beam=true;
     std::string date (argv[4]);
-    BuildTowerMap();
     //--------------------------histograms
     //-----------------parse csv
    /* std::ifstream file("runs_and_time.csv");//specify csv file with format (expected):Date, Run Number, Post-Beam (Y/N) 
