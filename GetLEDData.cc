@@ -3,7 +3,7 @@
 #include <TString.h>
 R__LOAD_LIBRARY(libfun4all.so);
 R__LOAD_LIBRARY(libfun4allraw.so);
-
+int n_evt=0;
 float LEDRunData::Heuristic(std::vector<int> data, std::vector<int> wf, int npr)
 {
 	//use chi_squared/ndf as a fitting heuristic
@@ -203,7 +203,7 @@ std::vector<float> LEDRunData::getPeak(std::vector<int> chl_data, int pedestal) 
 	peak_data.push_back(pos);
 	//now need to do waveform fitting, just going to do a very quick a* search
 //	std::cout<<"Peak data has size " <<peak_data.size() <<std::endl;
-	if(_fullform) width=FindWaveForm(&chl_data, (int)pos);
+	if(_fullform && n_evt<1000 ) width=FindWaveForm(&chl_data, (int)pos);
 	else{
 		int le=0, ge=0;
 		for(int sp=0; sp<chl_data.size(); sp++)
@@ -227,6 +227,7 @@ std::vector<float> LEDRunData::getPeak(std::vector<int> chl_data, int pedestal) 
 int LEDRunData::process_event(PHCompositeNode *topNode){
 //	std::vector<Event *> subeventeventvec; 
 	try{ 
+	n_evt++;
 	const std::string &inputnodename="PRDF";
 	Event* e = findNode::getClass<Event>(topNode, inputnodename);
 //	std::cout<<"Hit a new event"<<std::endl;
@@ -307,7 +308,7 @@ void LEDRunData::FileOutput(){
 	else{
 		f=new TFile(Form("run_data_fast/LED_run_data_%d.root", run_number), "RECREATE");
 	}	
-	f->cd();
+	//f->cd();
 	std::cout<<"File created" <<std::endl;
 	for(auto a:datahists) for(auto h:a.second) h->Write();
 	std::cout<<"wrote data to file" <<std::endl;

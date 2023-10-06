@@ -6,7 +6,7 @@ void BuildTimeSeries(std::string filename)
 {
 	//Take a file and add gaussian parameters for fitting the led 
 	//
-	TFile* f=new TFile(filename.c_str(), "UPDATE");
+	TFile* f=new TFile(filename.c_str(), "READ");
 	std::stringstream sst (filename);
 	std::string run;
 	bool isrun=false;
@@ -21,10 +21,16 @@ void BuildTimeSeries(std::string filename)
 		 	
 	std::vector<TH1F*> led_channels_peak, led_channel_pos;
 	TList* lk=f->GetListOfKeys();
+	string date; 
 	for(auto k:*lk){
 		std::string objecttitle=k->GetTitle();
-		if(objecttitle.find("Peak Value ") != std::string::npos ) led_channels_peak.push_back((TH1F*)k);
-		if(objecttitle.find("Position") != std::string::npos) led_channel_pos.push_back((TH1F*)k); 
+		TKey* k1=(TKey*)k; 
+		if(k1->ReadObj()->ClassName()=="TTree*") date=k1->ReadObj()->GetBranch("Date")->GetEntry(1);
+		TH1F* h=(TH1F*)(TKey*)k1->ReadObj();
+		if(h->GetEntries() == 0 ) continue;
+		if(objecttitle.find("Peak Value ") != std::string::npos ) led_channels_peak.push_back(h);
+		else if(objecttitle.find("Position") != std::string::npos) led_channel_pos.push_back(h); 
+		else continue;
 	}
 	TFile* fout=new TFile("Time_Series.root", "UPDATE");
 	fout->cd();
@@ -52,16 +58,26 @@ void BuildTimeSeries(std::string filename)
 			if(tow.find("packet") != std::string::npos) packet=true;
 			if(tow.find("channel") != std::string::npos) chn=true;
 		}
+		//std::cout<<"packet, channel found: " <<tower_name <<std::endl;
+		try{
+			double_t m=h->GetMean();
+			auto gt=h->Fit("gaus", "S");
+			gt->Parameter(2);
+		
+		}
+		catch(std::exception& e){
+				continue;}	
 		TFitResultPtr gf=h->Fit("gaus", "S");
-		Double_t chi2 = gf->Chi2();
+		//Double_t chi2 = gf->Chi2();
+		//std::cout<<"chi squared " <<std::endl;
 		Double_t sigma = gf->Parameter(2);
 		Double_t height = gf->Parameter(0);
 		Double_t mean = gf->Parameter(1); 
 		if(outlist->FindObject(h->GetName())){
-			TGraph* g1=(TGraph*)outlist->FindObject(h->GetName());
+			TGraph* g1=(TGraph*)((TKey*)outlist->FindObject(h->GetName()))->ReadObj();
 			g1->AddPoint(run_number, mean);
-			TGraph* g2=(TGraph*)outlist->FindObject(tower_height.c_str());
-			TGraph* g3=(TGraph*)outlist->FindObject(tower_sigma.c_str());
+			TGraph* g2=(TGraph*)((TKey*)outlist->FindObject(tower_height.c_str()))->ReadObj();
+			TGraph* g3=(TGraph*)((TKey*)outlist->FindObject(tower_sigma.c_str()))->ReadObj();
 			g2->AddPoint(run_number, height);
 			g3->AddPoint(run_number, sigma);
 			g1->Write();
@@ -86,8 +102,9 @@ void BuildTimeSeries(std::string filename)
 			g3->Write();
 			fout->Write();
 		}
+		//std::cout<<"finished running the mean graphs"<<std::endl;
 	}
-	for(int i=0; i<led_channel_pos.size(); i++){
+/*	for(int i=0; i<led_channel_pos.size(); i++){
 		TH1F* h=led_channel_pos.at(i);
 		std::string tow, tower_height, tower_sigma, tower_name;
 		std::istringstream sst (h->GetName());
@@ -109,6 +126,11 @@ void BuildTimeSeries(std::string filename)
 			if(tow.find("packet") != std::string::npos) packet=true;
 			if(tow.find("channel") != std::string::npos) chn=true;
 		}
+		try{ 
+			auto gt=h->Fit("gaus", "S");
+			gt->Parameter(2);
+		 }
+		catch(std::exception& e){continue;}	
 		TFitResultPtr gf=h->Fit("gaus", "S");
 		Double_t chi2 = gf->Chi2();
 		Double_t sigma = gf->Parameter(2);
@@ -143,7 +165,7 @@ void BuildTimeSeries(std::string filename)
 			g3->Write();
 			fout->Write();
 		}
-	}
+	}*/
 	fout->Write();
 	fout->Close();	
 }

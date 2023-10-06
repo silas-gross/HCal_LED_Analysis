@@ -19,6 +19,7 @@
 #include <TF1.h>
 #include <TF2.h>
 #include <TList.h>
+#include <TTree.h>
 #include <TCanvas.h>
 #include <TGraph.h>
 #include <TGraph2D.h>
@@ -453,6 +454,11 @@ int main(int argc, const char* argv[]){
     
    TFile* runfile =new TFile(runfilename.c_str(), "RECREATE");
    runfile->cd();
+   TTree* runinfo=new TTree("run_info", "Parameters of Run"); 
+   runinfo->Branch("Run Number", &run); 
+   runinfo->Branch("Date", &date);
+   runinfo->Branch("Beam", &Beam);
+   runinfo->Write();
    for(auto h:acc_data) h->Write();
    std::cout<<"Now trying to interact with the file itself"<<std::endl;
     runfile->Write();
