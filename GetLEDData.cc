@@ -203,25 +203,54 @@ std::vector<float> LEDRunData::getPeak(std::vector<int> chl_data, int pedestal) 
 	peak_data.push_back(pos);
 	//now need to do waveform fitting, just going to do a very quick a* search
 //	std::cout<<"Peak data has size " <<peak_data.size() <<std::endl;
-	if(_fullform && n_evt<1000 ) width=FindWaveForm(&chl_data, (int)pos);
+	if(use_template){
+		//put in the template fit from the fun4all fitting function
+		//need to use a better template for led data instead of test beam
+	//just copy thte function over and use it that way, do the interperloation in a basic way
+		TF1* template_function=new TF1*("tf", "[0]*pow(x-[1], [2])*exp([2])*exp(-[2]*(x-[1])/[3])*((1-[4])/pow([5],[2])*exp(-[2]*(x-[1])/[3])+[4]/pow([3],[2])+[pedestal]", 0, chl_data.size());
+		TH1F* ch_hist=new TH1F*("ch_hist", "temp", chl_data.size(), -0.5, chl_data.size()+0.5);
+		for(auto sp:chl_data) ch_hist->Fill(sp);
+		template_function->FixParameter("pedestal", pedestal);
+		ch_hist->Fit(template_function);
+		ch_hist->Add(template_function, -1);
+		int le=0, ge=0;
+		for(int sp=0; sp<chl_data.size(); sp++)
+		{
+			if(chl_data.at(sp)>= chl_data.at(pos)*0.475+0.515*pedestal && chl_data.at(sp)<=chl_data.at(pos)*0.515+0.475*pedestal && ge==0) le=sp; 
+			if(chl_data.at(sp)>=chl_data.at(pos)*0.95) ge=sp; 
+			if(chl_data.at(sp)>= chl_data.at(pos)*0.475+0.515*pedestal && chl_data.at(sp)<=chl_data.at(pos)*0.515+0.475*pedestal && ge!=0) ge=sp; 
+			
+		}
+		width=ge-le;
+		float rms=0;
+		for(int i=0; i<ch_hist->GetNbinsX(); i++) rms+=pow(ch_hist->GetBinContent(i), 2);
+		float erms=sqrt(1/(chl_data.size())*rms);
+		peak_data.push_back(erms);
+		delete ch_hist;
+		delete template_fuction;
+		chl_data.clear();
+		 
+	}
+	else{ if(_fullform && n_evt<1000 ) width=FindWaveForm(&chl_data, (int)pos);
 	else{
 		int le=0, ge=0;
 		for(int sp=0; sp<chl_data.size(); sp++)
 		{
-			if(chl_data.at(sp)>= chl_data.at(pos)*0.475 && chl_data.at(sp)<=chl_data.at(pos)*0.515 && ge==0) le=sp; 
-			if(chl_data.at(sp)>=chl_data.at(pos)*0.6) ge=sp; 
-			if(chl_data.at(sp)>= chl_data.at(pos)*0.475 && chl_data.at(sp)<=chl_data.at(pos)*0.515 && ge!=0) ge=sp; 
+			if(chl_data.at(sp)>= chl_data.at(pos)*0.475+0.515*pedestal && chl_data.at(sp)<=chl_data.at(pos)*0.515+0.475*pedestal && ge==0) le=sp; 
+			if(chl_data.at(sp)>=chl_data.at(pos)*0.95) ge=sp; 
+			if(chl_data.at(sp)>= chl_data.at(pos)*0.475+0.515*pedestal && chl_data.at(sp)<=chl_data.at(pos)*0.515+0.475*pedestal && ge!=0) ge=sp; 
 			
 		}
 		width=ge-le;
 	}		
 //	std::cout<<"Waveform has been found" <<std::endl;
 	peak_data.push_back(width);
-	for(int sp:chl_data) rms+=pow(sp-pedestal, 2);
 	if(!_fullform) for(int sp=0; sp<5; sp++) rms+=pow(chl_data[sp]-pedestal, 2);		
-	rms=sqrt(1/(chl_data.size())*rms);
-	peak_data.push_back(rms);
+	else for(int sp=0; sp<chl_data.size(); sp++) rms+=pow(chl_data[sp]-pedestal, 2);
+	float erms=sqrt(1/(chl_data.size())*rms);
+	peak_data.push_back(erms);
 	chl_data.clear();
+	}
 	return peak_data;
 }	
 int LEDRunData::process_event(PHCompositeNode *topNode){
@@ -311,6 +340,9 @@ void LEDRunData::FileOutput(){
 	//f->cd();
 	std::cout<<"File created" <<std::endl;
 	for(auto a:datahists) for(auto h:a.second) h->Write();
+	TNtuple* head=new TNtuple("header", "header", "run:date");
+	head->Fill(run_number, date);
+	head->Write();
 	std::cout<<"wrote data to file" <<std::endl;
 	f->Close();
 }

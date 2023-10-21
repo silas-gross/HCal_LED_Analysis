@@ -10,3 +10,4 @@
 *.o
 CompareLEDRuns
 condor*
+condor/* 

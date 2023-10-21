@@ -223,13 +223,13 @@ TGraph2D* slope_TGraph_2D(const std::vector<std::vector<float>>& slopes){
 }
 
 
-void RunForEach(std::string fname, std::vector <TH1F*> * histos, bool beam, int run, bool process_full)
+void RunForEach(std::string fname, std::vector <TH1F*> * histos, bool beam, int run, bool process_full, int date)
 {
  //does the full waveform processing, turn to false to run faster
 	std::fstream dummy(fname);
 	if(! dummy.is_open()) return;
 	else dummy.close();
-	LEDRunData* leddata=new LEDRunData(towermaper, fname, process_full, run);
+	LEDRunData* leddata=new LEDRunData(towermaper, fname, process_full, run, date, true); //turns on the template fitter
 	std::cout<<"Run " <<run <<" with beam status " <<beam<<std::endl;
 	leddata->ReadInput();
 	Fun4AllServer *se =Fun4AllServer::instance();
@@ -336,6 +336,7 @@ int main(int argc, const char* argv[]){
     std::cout <<"Passed argument is " <<argv[1]<<std::endl;
     std::cout << "Running with the full waveform fitting method :" << full <<std::endl;
     int run=std::stoi(argv[2]);
+    int dateint=std::stoi(argv[4]);
     bool Beam=false;
     if ( std::string(argv[3]).find("Y") != std::string::npos) Beam=true;
     std::string date (argv[4]);
@@ -446,7 +447,7 @@ int main(int argc, const char* argv[]){
    try{
 	//for(auto run:Run_info){
 		 std::cout<<"Working on run " <<Run_info.fname<<" with beam status " <<Run_info.Beam <<std::endl;
-		 RunForEach(Run_info.fname, &acc_data, Run_info.Beam, run, full); //want to make this command line for the false in a few 
+		 RunForEach(Run_info.fname, &acc_data, Run_info.Beam, run, full, dateint); //want to make this command line for the false in a few 
 		
 	}
    catch(std::exception& e) {}

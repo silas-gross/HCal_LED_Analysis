@@ -5,6 +5,7 @@
 #include <fun4all/Fun4AllInputManager.h>
 #include <fun4allraw/Fun4AllPrdfInputManager.h>
 #include <fun4allraw/Fun4AllPrdfInputPoolManager.h>
+#include <fun4all/CaloReco.h>
 #include <fun4all/SubsysReco.h>
 #include <phool/PHCompositeNode.h>
 #include <phool/PHDataNode.h>
@@ -18,6 +19,8 @@
 #include <map>
 #include <string>
 #include <TH1.h>
+#include <TF1.h>
+#include <TNtuple.h>
 #include <math.h>
 #include <algorithm>
 #include <utility>
@@ -54,19 +57,21 @@ class LEDRunData: public SubsysReco
 		  std::map < std::pair< int, int > , towerinfo > towermaps; //look up table for towers
 		  std::map < std::pair< int, int > , std::vector< TH1F* > > datahists;
 		  std::vector < int > packets; 
-		  bool _fullform=true;
+		  bool _fullform=true, use_template=false;
 	// methods to run
 		LEDRunData(std::string filename, bool pr){ 
 			runfiles=filename;
 			for(int i=0; i<16; i++){ packets.push_back(i+7001+int(i/8)*1000);}
 			_fullform=pr;
 		};
-		LEDRunData(std::map<std::pair<int, int>, towerinfo> towermap, std::string filename, bool pr, int rn){
+		LEDRunData(std::map<std::pair<int, int>, towerinfo> towermap, std::string filename, bool pr, int rn, int date, bool te){
 			towermaps=towermap; 
 			runfiles=filename;
+			date=date; 
 			_fullform=pr;
 			for(int i=0; i<16; i++) packets.push_back(i%8+7001+int(i/8)*1000);
 			run_number=rn;
+			use_template=te;
 		};
 		~LEDRunData(){
 //			towermaps.clear();
